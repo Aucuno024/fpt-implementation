@@ -9,6 +9,6 @@ int read_request(request_t *request, int connfd)
     rio_t rio;
 
     Rio_readinitb(&rio, connfd);
-    n = Rio_readnb(&rio, &request, sizeof(request_t));
+    n = rio_readnb(&rio, request, sizeof(request_t));
     return n == sizeof(request_t);
 }
