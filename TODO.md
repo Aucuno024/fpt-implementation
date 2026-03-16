@@ -38,7 +38,7 @@
 
 ---
 
-## Etape III – Répartition de charge**
+## Etape III – Répartition de charge
 
 ### Architecture maître-esclaves
 - [ ] ***(Question 11***) Implémenter un serveur maître (constante `NB_SLAVES`, port dédié aux esclaves (différent de 2121))
@@ -48,7 +48,7 @@
 
 ---
 
-## Etape IV – Opérations avancées**
+## Etape IV – Opérations avancées
 
 ### Opérations sur les fichiers
 - [ ] ***(Question 15***) Implémenter commande `ls` : retourner le contenu du répertoire courant du serveur.
