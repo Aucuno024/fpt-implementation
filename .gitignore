@@ -1,4 +1,6 @@
 perso/*
+bin/*
+obj/*
 
 # Prerequisites
 *.d
