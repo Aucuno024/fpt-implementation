@@ -2,13 +2,13 @@
  * echoclient.c - An echo client
  */
 #include "csapp.h"
+#include "request.h"
 #define PORT 2121
 
 int main(int argc, char **argv)
 {
     int clientfd;
     char *host, buf[MAXLINE];
-    rio_t rio;
 
     if (argc != 2) {
         fprintf(stderr, "usage: %s <host>\n", argv[0]);
@@ -30,14 +30,10 @@ int main(int argc, char **argv)
      */
     printf("client connected to server OS\n"); 
     
-    Rio_readinitb(&rio, clientfd);
-
+    request_t request;
     while (Fgets(buf, MAXLINE, stdin) != NULL) {
-        Rio_writen(clientfd, buf, strlen(buf));
-        while (Rio_readlineb(&rio, buf, MAXLINE) > 0) {
-            Fputs(buf, stdout);
-        }/* the server has prematurely closed the connection */
-        break;
+        encode_request(&request, GET, buf);
+        write_request(&request, clientfd);
     }
     Close(clientfd);
     exit(0);

@@ -6,7 +6,7 @@
 - [x] ***(Question 2)*** Définir la structure de donnée des requêtes (implémenter `request_t`) 
 - [x] ***(Question 3)*** cp du tp sur la partie ECHO + Définir le squelette des différentes composantes (bonne modularité)
 - [ ] ***(Question 4)*** Terminaison propre du serveur : traitant SIGINT, retransmission du signal à tous les fils du pool
-- [ ] ***(Question 4)*** Gestion du boutisme
+- [x] ***(Question 4)*** Gestion du boutisme
 - [ ] ***(Question 5)*** Définir les répertoires de travail par défaut côté client et côté serveur (distincts pour permettre une exécution sur la même machine)
 
 ### Gestion Serveur
@@ -18,7 +18,7 @@
 
 ### Gestion Client
 
-- [ ] ***(Question 7)*** Côté client : encoder la saisie utilisateur dans `request_t` et envoyer au serveur
+- [x] ***(Question 7)*** Côté client : encoder la saisie utilisateur dans `request_t` et envoyer au serveur
 - [ ] ***(Question 7)*** Côté client : traiter la réponse du serveur : affichage d'un message d'erreur pertinent ou confirmation de succès + statistiques (taille / temps / débit)
 
 ---

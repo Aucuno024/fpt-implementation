@@ -53,10 +53,28 @@ int main(int argc, char **argv)
                 printf("server connected to %s (%s)\n", client_hostname,
                     client_ip_string);
                 
-                request_t request;
-                read_request(&request, connfd);
-                printf("%ld bytes reçu\n", strlen(request.path));
+                request_t* request = malloc(sizeof(request_t));
 
+                if (request == NULL) {
+                    Close(connfd);
+                    continue;
+                }
+                if (read_request(request, connfd)) {
+                    printf("Failed to read request (size: %ld)\n", sizeof(request_t));
+                    free(request);
+                    Close(connfd);
+                    continue;
+                }
+
+                char path[MAXLINE];
+                typereq_t typereq;
+
+                decode_request(request, &typereq, path);
+                free(request);
+
+                printf("%ld bytes reçu\n", strlen(path));
+                printf("\t- type de requete : %d\n", typereq);
+                printf("\t- chemin : %s\n", path);
                 Close(connfd);
             }
         }
