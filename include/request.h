@@ -1,6 +1,7 @@
 #ifndef __REQUEST_H__
 #define __REQUEST_H__
 #include "csapp.h"
+
 typedef enum {
     GET = 0,
     PUT = 1,
