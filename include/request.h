@@ -11,8 +11,8 @@ typedef enum {
 } typereq_t;
 
 typedef struct {
-    uint8_t endian;
     typereq_t typereq;
+    uint8_t endian;
     char path[MAXLINE];
 } request_t;
 /**
