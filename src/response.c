@@ -51,7 +51,7 @@ int decode_response(response_t *response, uint8_t *content) {
     return 0;
 }
 
-int send_reponse(int connfd, char path[], typereq_t type)
+int send_response(int connfd, char path[], typereq_t type)
 {
     int fd;
     response_t *response = malloc(sizeof(response_t));

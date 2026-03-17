@@ -8,13 +8,11 @@
 #define POOL_SIZE 20
 #endif
 
-int i;
 
 
 void handler_chld(int signal) 
 {
     wait(NULL);
-    i--;
 }
 
 void handler_int(int signal)
@@ -40,7 +38,7 @@ int main(int argc, char **argv)
     clientlen = (socklen_t)sizeof(clientaddr);
 
     listenfd = Open_listenfd(PORT);
-    for(i = 0; i < POOL_SIZE; i++)
+    for(int i = 0; i < POOL_SIZE; i++)
     {
         if(Fork() == 0) {
             while (1) {
@@ -77,17 +75,8 @@ int main(int argc, char **argv)
                 printf("%ld bytes reçu\n", strlen(path));
                 printf("\t- type de requete : %d\n", typereq);
                 printf("\t- chemin : %s\n", path);
-
                 // Creation de la réponse temporaire
-                response_t* response = malloc(sizeof(response_t));
-                if (response == NULL) {
-                    Close(connfd);
-                    continue;
-                }
-                encode_response(response, (const uint8_t *)"OK\n");
-                write_response(response, connfd);
-                free(response);
-
+                send_response(connfd, path, typereq);
                 Close(connfd);
             }
         }

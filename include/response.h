@@ -57,7 +57,7 @@ int decode_response(response_t *response, uint8_t *content);
  * @param type le type de requete
  * @return code d'erreur associe a la reponse
  */
-int send_reponse(int connfd, char path[], typereq_t type);
+int send_response(int connfd, char path[], typereq_t type);
 
 #define NO_ERROR_R 0
 #define PATH_ERROR_R 1
