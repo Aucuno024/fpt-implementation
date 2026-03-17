@@ -13,12 +13,12 @@
 - [X] ***(Question 6)*** Identifier et valider le type de requête reçue ; renvoyer une erreur si type invalide
 - [X] ***(Question 6)*** Définir une structure de donnée pour les réponses du serveur (implémenter `response_t` (au moins un champ entier code de retour succès/erreur))
 - [X] ***(Question 6)*** Traitement GET : chargement du fichier en mémoire en une seule fois, envoi au client (tout type de fichier, y compris binaire) ; code erreur si fichier absent
-- [ ] ***(Question 6)*** Fermer connexion après traitement de la requête (côté serveur)
+- [x] ***(Question 6)*** Fermer connexion après traitement de la requête (côté serveur)
 
 ### Gestion Client
 
 - [x] ***(Question 7)*** Côté client : encoder la saisie utilisateur dans `request_t` et envoyer au serveur
-- [ ] ***(Question 7)*** Côté client : traiter la réponse du serveur : affichage d'un message d'erreur pertinent ou confirmation de succès + statistiques (taille / temps / débit)
+- [x] ***(Question 7)*** Côté client : traiter la réponse du serveur : affichage d'un message d'erreur pertinent ou confirmation de succès + statistiques (taille / temps / débit)
 
 ---
 

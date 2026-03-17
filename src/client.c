@@ -4,6 +4,8 @@
 #include "csapp.h"
 #include "request.h"
 #include "response.h"
+#include <time.h>
+#include "utils.h"
 #define PORT 2121
 
 
@@ -38,6 +40,9 @@ int command_parser(const char *cmd, typereq_t *typereq, char *path) {
     return 0;
 }
 
+
+
+
 int main(int argc, char **argv)
 {
     int clientfd;
@@ -65,6 +70,7 @@ int main(int argc, char **argv)
     
     request_t request;
     response_t response;
+    printf("ftp>");
     if (Fgets(buf, MAXLINE, stdin) != NULL) {
         typereq_t typereq;
         int err = command_parser(buf, &typereq, buf);
@@ -76,15 +82,38 @@ int main(int argc, char **argv)
                 printf("Nom de commande invalide. Commandes valides: get, put, ls, rm\n");
             }
         } else {
+
             size_t n = strlen(buf);
             if (n > 0 && buf[n-1] == '\n') buf[n-1] = '\0';
+
             encode_request(&request, typereq, buf);
             write_request(&request, clientfd);
             
             // Lecture de la réponse du serveur
             uint8_t content[MAXLINE];
-            if (read_response(&response, clientfd) == 0 && decode_response(&response, content) == 0) {
-                printf("Reponse: %s", content);
+            uint8_t error;
+            time_t start_time = time(NULL);
+            if (read_response(&response, clientfd) == 0 && decode_response(&response, content, &error) == 0) {
+                if (error == NO_ERROR_R) {
+                    printf("Transfer successfully complete :\n");
+                } else {
+                    printf("Transfer failed with error %d\n", error);
+                }
+
+                int nb_bytes = (int)sizeof(response_t);
+                long int dt = time(NULL) - start_time;
+
+                printf("%d bytes received in %ld seconds", nb_bytes, dt);
+                printf("(");
+                if (dt != 0) {
+                    printf("%ld", nb_bytes / dt / 1024);
+                } else {
+                    printf("inf");
+                }
+                printf(" Kbytes/s)\n");
+
+                write_file_from_content(buf, content);
+
             }
         }
     }
