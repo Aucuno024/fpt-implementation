@@ -43,40 +43,44 @@ int main(int argc, char **argv)
         if(Fork() == 0) {
             while (1) {
                 connfd = Accept(listenfd, (SA *)&clientaddr, &clientlen);
-                Getnameinfo((SA *) &clientaddr, clientlen,
-                            client_hostname, MAX_NAME_LEN, 0, 0, 0);
-                
-                Inet_ntop(AF_INET, &clientaddr.sin_addr, client_ip_string,
-                        INET_ADDRSTRLEN);
-                
-                printf("server connected to %s (%s)\n", client_hostname,
-                    client_ip_string);
-                
-                request_t* request = malloc(sizeof(request_t));
+                while(1) {
+                    Getnameinfo((SA *) &clientaddr, clientlen,
+                                client_hostname, MAX_NAME_LEN, 0, 0, 0);
+                    
+                    Inet_ntop(AF_INET, &clientaddr.sin_addr, client_ip_string,
+                            INET_ADDRSTRLEN);
+                    
+                    printf("server connected to %s (%s)\n", client_hostname,
+                        client_ip_string);
+                    
+                    request_t* request = malloc(sizeof(request_t));
 
-                if (request == NULL) {
-                    Close(connfd);
-                    continue;
-                }
-                if (read_request(request, connfd)) {
-                    printf("Failed to read request (size: %ld)\n", sizeof(request_t));
+                    if (request == NULL) {
+                        Close(connfd);
+                        continue;
+                    }
+                    if (read_request(request, connfd)) {
+                        printf("Failed to read request (size: %ld)\n", sizeof(request_t));
+                        free(request);
+                        send_error(connfd, ERROR_READ_REQUEST);
+                        break;
+                    }
+
+                    // Traitement de la requete temporaire
+                    char path[MAXLINE];
+                    typereq_t typereq;
+
+                    decode_request(request, &typereq, path);
                     free(request);
-                    Close(connfd);
-                    continue;
+
+                    printf("%ld bytes reçu\n", strlen(path));
+                    printf("\t- type de requete : %d\n", typereq);
+                    printf("\t- chemin : %s\n", path);
+                    // Creation de la réponse temporaire
+                    send_response(connfd, path, typereq);
+                    if(typereq == BYE)
+                        break;
                 }
-
-                // Traitement de la requete temporaire
-                char path[MAXLINE];
-                typereq_t typereq;
-
-                decode_request(request, &typereq, path);
-                free(request);
-
-                printf("%ld bytes reçu\n", strlen(path));
-                printf("\t- type de requete : %d\n", typereq);
-                printf("\t- chemin : %s\n", path);
-                // Creation de la réponse temporaire
-                send_response(connfd, path, typereq);
                 Close(connfd);
             }
         }

@@ -7,7 +7,8 @@ typedef enum {
     GET = 0,
     PUT = 1,
     LS = 2,
-    RM = 3
+    RM = 3,
+    BYE = 4
 } typereq_t;
 
 typedef struct {
@@ -56,5 +57,4 @@ int encode_request(request_t *request, typereq_t typereq, const char *path);
  * @return int 0 si le décodage a été effectué 1 sinon
  */
 int decode_request(request_t *request, typereq_t *typereq, char *path);
-
 #endif
