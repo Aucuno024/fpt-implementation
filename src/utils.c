@@ -1,6 +1,8 @@
 #include "utils.h"
 #include "csapp.h"
 #include <stdint.h>
+#include "string.h"
+
 
 int get_endianess() {
     static uint32_t one = 1;
@@ -9,6 +11,23 @@ int get_endianess() {
 
 int open_file_r(char path[], int *fd)
 {
+    if(is_relative_path(path))
+    {
+        char *newpath = malloc(strlen(path) + strlen(DEFAULT_SERVER_DIR) + 1);
+        int i;
+        for(i = 0; DEFAULT_SERVER_DIR[i] != '\0'; i++)
+        {
+            newpath[i] = DEFAULT_SERVER_DIR[i];
+        }
+        for(int j = 0; path[j] != '\0'; j++)
+        {
+            newpath[i++] = path[j];
+        }
+        newpath[i] = '\0';
+        int r = (*fd = open(newpath, O_RDONLY, 0)) != -1;
+        free(newpath);
+        return r;
+    }
     return (*fd = open(path, O_RDONLY, 0)) != -1;
 }
 

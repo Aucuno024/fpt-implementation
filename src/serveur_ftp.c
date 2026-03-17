@@ -7,9 +7,11 @@
 #ifndef POOL_SIZE
 #define POOL_SIZE 20
 #endif
+
 #define SPEAKER "Raccoon"
-
-
+#ifndef DEFAULT_SERVER_DIR
+#define DEFAULT_SERVER_DIR "./serverdir/"
+#endif
 
 void handler_chld(int signal) 
 {
