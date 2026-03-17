@@ -46,9 +46,10 @@ int encode_response(response_t *response, const uint8_t *content);
  * @brief Decode une réponse en lisant les champs de la structure response_t
  * @param response la réponse a decoder
  * @param content  le contenu de la réponse a decoder
+ * @param error le code d'erreur de la réponse a decoder
  * @return int 0 si le décodage a été effectué 1 sinon
  */
-int decode_response(response_t *response, uint8_t *content);
+int decode_response(response_t *response, uint8_t *content, uint8_t *error);
 /**
  * @fn int send_reponse(int connfd, char path[], typereq_t type);
  * @brief Traite une requete et envoie la reponse appropriee

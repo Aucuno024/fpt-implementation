@@ -41,13 +41,14 @@ int encode_response(response_t *response, const uint8_t *content) {
     return 0;
 }
 
-int decode_response(response_t *response, uint8_t *content) {
-    if (response == NULL || content == NULL) {
+int decode_response(response_t *response, uint8_t *content, uint8_t *error) {
+    if (response == NULL || content == NULL || error == NULL) {
         return 1;
     }
     if (response->endian != get_endianess() && swap_endian_response(response) != 0) return 1;
     
     strncpy((char *)content, (const char *)response->content, MAXLINE);
+    *error = response->error;
     return 0;
 }
 
