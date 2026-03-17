@@ -1,9 +1,10 @@
 #include "response.h"
+#include "request.h"
 #include "csapp.h"
 #include <stdint.h>
 #include <assert.h>
 #include <stdlib.h>
-#include <utils.h>
+#include "utils.h"
 
 
 
@@ -48,4 +49,36 @@ int decode_response(response_t *response, uint8_t *content) {
     
     strncpy((char *)content, (const char *)response->content, MAXLINE);
     return 0;
+}
+
+int send_reponse(int connfd, char path[], typereq_t type)
+{
+    int fd;
+    response_t *response = malloc(sizeof(response_t));
+    response->error = NO_ERROR_R;
+    if( type == GET)
+    {
+        printf("requete get\n");
+        if(!open_file_r(path, &fd))
+        {
+            printf("fichier non ouvert %d\n", fd);
+            response->error = PATH_ERROR_R;
+            write_response(response, connfd);
+            free(response);
+            return PATH_ERROR_R;
+        }
+        printf("fichier ouvert %d\n", fd);
+        uint8_t buf[MAXBUF];
+        rio_t rio;
+        Rio_readinitb(&rio, fd);
+        Rio_readnb(&rio, buf, MAXBUF);
+        encode_response(response, buf);
+        write_response(response, connfd);
+        free(response);
+        return NO_ERROR_R;
+    }
+    response->error = TYPE_ERROR_R;
+    write_response(response, connfd);
+    free(response);
+    return TYPE_ERROR_R;
 }

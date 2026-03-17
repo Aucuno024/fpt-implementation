@@ -2,11 +2,14 @@
 #define __RESPONSE_H__
 #include "csapp.h"
 #include <stdint.h>
+#include "request.h"
 
 typedef struct {
     uint8_t endian; // 0 pour little endian, 1 pour big endian
     uint8_t content[MAXLINE];
+    uint8_t error;
 } response_t;
+
 
 /**
  * @brief Permet de swap les endians d'une reponse
@@ -46,5 +49,17 @@ int encode_response(response_t *response, const uint8_t *content);
  * @return int 0 si le décodage a été effectué 1 sinon
  */
 int decode_response(response_t *response, uint8_t *content);
+/**
+ * @fn int send_reponse(int connfd, char path[], typereq_t type);
+ * @brief Traite une requete et envoie la reponse appropriee
+ * @param connfd le socket ou envoyer la reponse
+ * @param path le chemin contenu dans la requete
+ * @param type le type de requete
+ * @return code d'erreur associe a la reponse
+ */
+int send_reponse(int connfd, char path[], typereq_t type);
 
+#define NO_ERROR_R 0
+#define PATH_ERROR_R 1
+#define TYPE_ERROR_R 2
 #endif
