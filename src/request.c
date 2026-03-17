@@ -5,7 +5,6 @@
 #include <stdlib.h>
 #include <utils.h>
 
-#define IS_LITTLE_ENDIAN ((uint16_t)1 & 0xFF == 1)
 
 int swap_endian_request(request_t *request) {
     if (request == NULL) {
