@@ -7,6 +7,7 @@
 #ifndef POOL_SIZE
 #define POOL_SIZE 20
 #endif
+#define SPEAKER "Raccoon"
 
 
 
@@ -17,8 +18,13 @@ void handler_chld(int signal)
 
 void handler_int(int signal)
 {
-    Kill(0, SIGKILL);
-    while(waitpid(0, NULL, WNOHANG));
+    #ifdef DEBUG
+        Kill(0, SIGKILL);
+        while(printf("%s say \" Catch%d\"\n",SPEAKER, waitpid(0, NULL, WNOHANG)));
+    #else 
+        Kill(0, SIGKILL);
+        while(waitpid(0, NULL, WNOHANG));
+    #endif
     exit(0);
 }
 /* 
@@ -38,49 +44,66 @@ int main(int argc, char **argv)
     clientlen = (socklen_t)sizeof(clientaddr);
 
     listenfd = Open_listenfd(PORT);
+    #ifdef DEBUG
+        printf("%s say \"client len :%u listenfd : %d\"\n", SPEAKER, clientlen, listenfd);
+    #endif
     for(int i = 0; i < POOL_SIZE; i++)
     {
         if(Fork() == 0) {
             while (1) {
                 connfd = Accept(listenfd, (SA *)&clientaddr, &clientlen);
-                while(1) {
-                    Getnameinfo((SA *) &clientaddr, clientlen,
+                Getnameinfo((SA *) &clientaddr, clientlen,
                                 client_hostname, MAX_NAME_LEN, 0, 0, 0);
                     
-                    Inet_ntop(AF_INET, &clientaddr.sin_addr, client_ip_string,
-                            INET_ADDRSTRLEN);
-                    
-                    printf("server connected to %s (%s)\n", client_hostname,
-                        client_ip_string);
-                    
+                Inet_ntop(AF_INET, &clientaddr.sin_addr, client_ip_string,
+                        INET_ADDRSTRLEN);
+
+                #ifdef DEBUG
+                    printf("%s say \"Server connected to %s (%s)\"\n", SPEAKER, client_hostname, client_ip_string);
+                #endif
+                while(1) {
                     request_t* request = malloc(sizeof(request_t));
 
                     if (request == NULL) {
+                        #ifdef DEBUG
+                            printf("%s say \"Request can't allocate\"\n", SPEAKER);
+                        #endif
                         Close(connfd);
                         continue;
                     }
                     if (read_request(request, connfd)) {
-                        printf("Failed to read request (size: %ld)\n", sizeof(request_t));
+                        #ifdef DEBUG
+                            printf("%s say \"Failed to read request (size: %ld)\"\n", SPEAKER, sizeof(request_t));
+                        #endif
                         free(request);
                         send_error(connfd, ERROR_READ_REQUEST);
                         break;
                     }
 
-                    // Traitement de la requete temporaire
                     char path[MAXLINE];
                     typereq_t typereq;
 
                     decode_request(request, &typereq, path);
                     free(request);
 
-                    printf("%ld bytes reçu\n", strlen(path));
-                    printf("\t- type de requete : %d\n", typereq);
-                    printf("\t- chemin : %s\n", path);
-                    // Creation de la réponse temporaire
+                    #ifdef DEBUG
+                    printf("%s say \"%ld bytes reçu\"\n", SPEAKER, strlen(path));
+                    printf("%s say \"\t- type de requete : %d\"\n", SPEAKER, typereq);
+                    printf("%s say \"\t- chemin : %s\"\n", SPEAKER, path);
+                    #endif
+
                     send_response(connfd, path, typereq);
+
+                    #ifdef DEBUG
+                        printf("%s say \"Request send\"\n", SPEAKER);
+                    #endif
+
                     if(typereq == BYE)
                         break;
                 }
+                #ifdef DEBUG
+                    printf("%s say \"End of connection\"\n", SPEAKER);
+                #endif
                 Close(connfd);
             }
         }

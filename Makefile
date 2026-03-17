@@ -10,7 +10,9 @@ OBJS = $(SRCS:$(SRCDIR)/%.c=$(OBJDIR)/%.o)
 CFLAGS=-Wall -g
 CPPFLAGS=-Iinclude
 LIBS+=
-
+ifdef DEBUG
+CPPFLAGS+= -DDEBUG
+endif
 all: make_dir $(addprefix $(EXECDIR)/,$(EXEC))
 
 $(OBJDIR)/%.o: $(SRCDIR)/%.c
