@@ -34,6 +34,8 @@ int main(int argc, char **argv)
     request_t request;
     response_t response;
     while (Fgets(buf, MAXLINE, stdin) != NULL) {
+        size_t n = strlen(buf);
+        if (n > 0 && buf[n-1] == '\n') buf[n-1] = '\0';
         encode_request(&request, GET, buf);
         write_request(&request, clientfd);
         
