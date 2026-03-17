@@ -6,4 +6,12 @@
  * @return int 0 si little endian, 1 si big endian
  */
 int get_endianess();
+/**
+ * @fn int open_file_r(char path[], int *fd)
+ * @brief Ouvre un fichier a un chemin donnee dans fd
+ * @param path le chemin vers le fichier
+ * @param fd le parametre recevant le descripteur
+ * @return 1 si tout s'est bien passé 0
+ */
+int open_file_r(char path[], int *fd);
 #endif
