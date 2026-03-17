@@ -9,9 +9,7 @@
 #endif
 
 #define SPEAKER "Raccoon"
-#ifndef DEFAULT_SERVER_DIR
-#define DEFAULT_SERVER_DIR "./serverdir/"
-#endif
+
 
 void handler_chld(int signal) 
 {
@@ -93,8 +91,8 @@ int main(int argc, char **argv)
                     printf("%s say \"\t- type de requete : %d\"\n", SPEAKER, typereq);
                     printf("%s say \"\t- chemin : %s\"\n", SPEAKER, path);
                     #endif
-
                     send_response(connfd, path, typereq);
+                    
 
                     #ifdef DEBUG
                         printf("%s say \"Request send\"\n", SPEAKER);
