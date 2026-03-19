@@ -71,4 +71,5 @@ void send_error(int connfd, uint8_t error);
 #define PATH_ERROR_R 1
 #define TYPE_ERROR_R 2
 #define ERROR_READ_REQUEST 3
+#define MAX_SLAVE_ERROR 4
 #endif
