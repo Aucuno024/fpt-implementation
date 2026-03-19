@@ -26,7 +26,7 @@
 
 
 ### Plusieurs paquets par requête
-- [ ] ***(Question 8)*** Découpage en blocs de taille fixe : définir le protocole (taille de bloc, nombre de blocs communiqué au client avant envoi), envoi et réception par blocs (création d'une structure de paquet)
+- [X] ***(Question 8)*** Découpage en blocs de taille fixe : définir le protocole (taille de bloc, nombre de blocs communiqué au client avant envoi), envoi et réception par blocs (création d'une structure de paquet)
 
 ### Plusieurs fichiers par connexion
 - [ ] ***(Question 9)*** Gérer plusieurs demande de fichiers par connexion (terminer avec la commande "bye" par le client)

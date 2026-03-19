@@ -4,6 +4,8 @@
 #include <stdint.h>
 #include <assert.h>
 #include <stdlib.h>
+#include <sys/stat.h>
+#include <arpa/inet.h>
 #include "utils.h"
 
 
@@ -52,41 +54,224 @@ int decode_response(response_t *response, uint8_t *content, uint8_t *error) {
     return 0;
 }
 
+// Swap les bytes du endian du header
+int swap_endian_header(transfer_header_t *header) {
+    if (!header) return 1;
+
+    header->total_size = ntohl(header->total_size);
+    header->block_size = ntohs(header->block_size);
+
+    return 0;
+}
+
+int send_transfer_header(int connfd, uint32_t total_size) {
+    transfer_header_t header;
+    header.endian = get_endianess();
+    header.total_size = total_size;
+    header.block_size = BLOCK_SIZE;
+    header.error = NO_ERROR_R;
+    
+    Rio_writen(connfd, &header, sizeof(transfer_header_t));
+    return 0;
+}
+
+int send_data_block(int connfd, uint16_t block_num, const uint8_t *data, uint16_t data_size) {
+    if (data == NULL || data_size > BLOCK_SIZE) {
+        return 1;
+    }
+    
+    data_block_t block;
+    block.block_num = block_num;
+    block.data_size = data_size;
+    memcpy(block.data, data, data_size);
+    
+    Rio_writen(connfd, &block, sizeof(data_block_t));
+    return 0;
+}
+
+int send_file_by_blocks(int connfd, char path[]) {
+    int fd;
+    struct stat st;
+    uint32_t file_size = 0;
+    
+    // Ouvrir le fichier en lecture d'abord
+    if (!open_file_r(path, &fd)) {
+        // Envoyer un header avec erreur
+        transfer_header_t error_header;
+        error_header.endian = get_endianess();
+        error_header.total_size = 0;
+        error_header.block_size = BLOCK_SIZE;
+        error_header.error = PATH_ERROR_R;
+        Rio_writen(connfd, &error_header, sizeof(transfer_header_t));
+        return PATH_ERROR_R;
+    }
+    
+    // Obtenir la taille du fichier via fstat
+    if (fstat(fd, &st) < 0) {
+        Close(fd);
+        transfer_header_t error_header;
+        error_header.endian = get_endianess();
+        error_header.total_size = 0;
+        error_header.block_size = BLOCK_SIZE;
+        error_header.error = PATH_ERROR_R;
+        Rio_writen(connfd, &error_header, sizeof(transfer_header_t));
+        return PATH_ERROR_R;
+    }
+    
+    file_size = (uint32_t)st.st_size;
+    
+    // Envoyer le header de transfert
+    if (send_transfer_header(connfd, file_size) != 0) {
+        Close(fd);
+        return 1;
+    }
+    
+    // Envoyer le fichier par blocs
+    uint8_t buffer[BLOCK_SIZE];
+    rio_t rio;
+    Rio_readinitb(&rio, fd);
+    
+    uint16_t block_num = 0;
+    uint32_t total_sent = 0;
+    
+    while (total_sent < file_size) {
+        // Lire un bloc
+        size_t to_read = (file_size - total_sent > BLOCK_SIZE) ? BLOCK_SIZE : (file_size - total_sent);
+        size_t n = Rio_readnb(&rio, buffer, to_read);
+        
+        if (n == 0) {
+            // EOF atteint
+            Close(fd);
+            return 1;
+        }
+        
+        // Envoyer le bloc
+        if (send_data_block(connfd, block_num, buffer, (uint16_t)n) != 0) {
+            Close(fd);
+            return 1;
+        }
+        
+        total_sent += n;
+        block_num++;
+    }
+    
+    Close(fd);
+    return NO_ERROR_R;
+}
+
+
+int receive_transfer_header(int connfd, transfer_header_t *header, rio_t *rio) {
+    if (header == NULL || rio == NULL) {
+        return 1;
+    }
+    
+    size_t n = Rio_readnb(rio, header, sizeof(transfer_header_t));
+    
+    if (n != sizeof(transfer_header_t)) {
+        return 1;
+    }
+    
+    // swap endian si nécessaire
+    if (header->endian != get_endianess()) {
+        if (swap_endian_header(header) != 0) {
+            return 1;
+        }
+    }
+    
+    return 0;
+}
+
+int receive_data_block(int connfd, data_block_t *block, rio_t *rio) {
+    if (block == NULL || rio == NULL) {
+        return 1;
+    }
+    
+    size_t n = Rio_readnb(rio, block, sizeof(data_block_t));
+    
+    if (n != sizeof(data_block_t)) {
+        return 1;
+    }
+    
+    return 0;
+}
+
+int receive_file_by_blocks(int connfd, char path[], transfer_header_t *header_out) {
+    transfer_header_t header;
+    data_block_t block;
+    rio_t rio;
+    
+    Rio_readinitb(&rio, connfd);
+    
+    // Recevoir le header
+    if (receive_transfer_header(connfd, &header, &rio) != 0) {
+        return 1;
+    }
+    
+    // Copier le header en sortie si demandé
+    if (header_out != NULL) {
+        *header_out = header;
+    }
+    
+    if (header.error != NO_ERROR_R) {
+        return header.error;
+    }
+    
+    // Construire le chemin de destination (avec clientdir si chemin relatif)
+    char *dest_path = path;
+    char full_path[MAXLINE];
+    
+    if (is_relative_path(path)) {
+        snprintf(full_path, sizeof(full_path), "%s%s", DEFAULT_CLIENT_DIR, path);
+        dest_path = full_path;
+    }
+    
+    int fd = Open(dest_path, O_CREAT | O_WRONLY | O_TRUNC, DEF_MODE);
+    if (fd < 0) {
+        return 1;
+    }
+    
+    uint32_t total_received = 0;
+    
+    while (total_received < header.total_size) {
+        if (receive_data_block(connfd, &block, &rio) != 0) {
+            Close(fd);
+            return 1;
+        }
+        
+        // Ecrire le bloc dans le fichier
+        if (Write(fd, block.data, block.data_size) < 0) {
+            Close(fd);
+            return 1;
+        }
+        
+        total_received += block.data_size;
+    }
+    
+    Close(fd);
+    return NO_ERROR_R;
+}
+
+
 int send_response(int connfd, char path[], typereq_t type)
 {
-    int fd;
-    response_t *response = malloc(sizeof(response_t));
-    response->error = NO_ERROR_R;
+    response_t *response;
+    
     switch(type)
     {
         case GET:
-            if(!open_file_r(path, &fd))
-            {
-                response->error = PATH_ERROR_R;
-                write_response(response, connfd);
-                free(response);
-                return PATH_ERROR_R;
-            }
-            uint8_t buf[MAXBUF];
-            rio_t rio;
-            Rio_readinitb(&rio, fd);
+            return send_file_by_blocks(connfd, path);
             
-            size_t n = Rio_readnb(&rio, buf, MAXBUF - 1);
-            buf[n] = '\0';
-
-            encode_response(response, buf);
-            write_response(response, connfd);
-            free(response);
-            return NO_ERROR_R;
         case BYE:
+            response = malloc(sizeof(response_t));
             encode_response(response, (const uint8_t*) "BYE\n");
             write_response(response, connfd);
             free(response);
             return NO_ERROR_R;
+            
         default:
+            response = malloc(sizeof(response_t));
             response->error = TYPE_ERROR_R;
-            write_response(response, connfd);
-            free(response);
+            response->endian = get_endianess();
             return TYPE_ERROR_R;
     }
 }
