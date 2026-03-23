@@ -5,9 +5,7 @@
 #ifndef SLAVE_PORT
 #define SLAVE_PORT 1212
 #endif
-
 #define MAX_NAME_LEN 256
-
 #ifndef POOL_SIZE
 #define POOL_SIZE 20
 #endif
@@ -112,6 +110,7 @@ int main(int argc, char **argv)
                         #endif
                         break;
                     }
+                    
 
                     #ifdef DEBUG
                         printf("%s say \"Request send\"\n", SPEAKER);
