@@ -40,9 +40,9 @@
 ## Etape III – Répartition de charge
 
 ### Architecture maître-esclaves
-- [ ] ***(Question 11***) Implémenter un serveur maître (constante `NB_SLAVES`, port dédié aux esclaves (différent de 2121))
-- [ ] ***(Question 12***) Implémenter l'interconnexion avec les esclaves (le maître établit `NB_SLAVES` connexions)
-- [ ] ***(Question 13***) Adapter le protocole client : après connexion au maître, recevoir les infos de l'esclave désigné, puis se connecter directement à celui-ci.
+- [x] ***(Question 11***) Implémenter un serveur maître (constante `NB_SLAVES`, port dédié aux esclaves (différent de 2121))
+- [x] ***(Question 12***) Implémenter l'interconnexion avec les esclaves (le maître établit `NB_SLAVES` connexions)
+- [x] ***(Question 13***) Adapter le protocole client : après connexion au maître, recevoir les infos de l'esclave désigné, puis se connecter directement à celui-ci.
 - [ ] ***(Question 14 BONUS)*** Reconnexion en cas de panne d'un esclave.
 
 ---
