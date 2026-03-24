@@ -6,7 +6,7 @@
 #define MAX_SIZE_PORT 5
 #define PORT 2121
 #define MAX_NAME_LEN 256
-#define SPEAKER "Raccoon"
+#define SPEAKER "hal 9000"
 
 #ifndef NB_SLAVE
 #define NB_SLAVE 2
