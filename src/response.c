@@ -665,6 +665,8 @@ int receive_content(int connfd, int out)
             return 1;
         total_received += block.data_size;
     }
+    if(out == STDOUT_FILENO)
+        write(out, "\0", 1);
     return NO_ERROR_R;
 }
 
