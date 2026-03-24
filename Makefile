@@ -1,16 +1,21 @@
-.PHONY: all clean fclean make_dir
+.PHONY: all clean fclean make_dir test
 .SUFFIXES:
 CC=gcc
 SRCDIR=src
 OBJDIR=obj
 
-EXEC=client serveur_ftp master_dns
+EXEC=client serveur_ftp master_dns test
 EXECDIR=bin
 SRCS=$(wildcard $(SRCDIR)/*.c)
 OBJS = $(SRCS:$(SRCDIR)/%.c=$(OBJDIR)/%.o)
 CFLAGS=-Wall -g
 CPPFLAGS=-Iinclude
 LIBS+=
+
+TEST_SRCDIR=src_test
+TEST_INCDIR=include_test
+TEST_SRCS=$(wildcard $(TEST_SRCDIR)/*.c)
+TEST_OBJS=$(TEST_SRCS:$(TEST_SRCDIR)/%.c=$(OBJDIR)/%.o)
 
 ifdef DEBUG
 CPPFLAGS+= -DDEBUG -DSLAVE_PORT=1212
@@ -41,10 +46,13 @@ re: clean all
 $(OBJDIR)/%.o: $(SRCDIR)/%.c
 	$(CC) -c $(CFLAGS) $(CPPFLAGS) $< -o $@
 
+$(OBJDIR)/%.o: $(TEST_SRCDIR)/%.c
+	$(CC) -c $(CFLAGS) $(CPPFLAGS) -I$(TEST_INCDIR) $< -o $@
 
-CLIENT_OBJS := $(OBJDIR)/client.o $(OBJDIR)/csapp.o $(OBJDIR)/request.o $(OBJDIR)/utils.o $(OBJDIR)/response.o
-SERVER_OBJS := $(OBJDIR)/serveur_ftp.o $(OBJDIR)/csapp.o $(OBJDIR)/request.o $(OBJDIR)/utils.o $(OBJDIR)/response.o
-MASTER_OBJS := $(OBJDIR)/master_dns.o $(OBJDIR)/csapp.o $(OBJDIR)/request.o $(OBJDIR)/utils.o $(OBJDIR)/response.o
+
+CLIENT_OBJS := $(OBJDIR)/client.o $(OBJDIR)/csapp.o $(OBJDIR)/request.o $(OBJDIR)/utils.o $(OBJDIR)/response.o $(OBJDIR)/logs.o
+SERVER_OBJS := $(OBJDIR)/serveur_ftp.o $(OBJDIR)/csapp.o $(OBJDIR)/request.o $(OBJDIR)/utils.o $(OBJDIR)/response.o $(OBJDIR)/logs.o
+MASTER_OBJS := $(OBJDIR)/master_dns.o $(OBJDIR)/csapp.o $(OBJDIR)/request.o $(OBJDIR)/utils.o $(OBJDIR)/response.o $(OBJDIR)/logs.o
 
 $(EXECDIR)/client: $(CLIENT_OBJS)
 	$(CC) -o $@ $(LDFLAGS) $^ $(LIBS)
@@ -53,6 +61,9 @@ $(EXECDIR)/serveur_ftp: $(SERVER_OBJS)
 	$(CC) -o $@ $(LDFLAGS) $^ $(LIBS)
 
 $(EXECDIR)/master_dns: $(MASTER_OBJS)
+	$(CC) -o $@ $(LDFLAGS) $^ $(LIBS)
+
+$(EXECDIR)/test: $(TEST_OBJS) $(OBJDIR)/csapp.o $(OBJDIR)/request.o $(OBJDIR)/utils.o $(OBJDIR)/response.o $(OBJDIR)/logs.o
 	$(CC) -o $@ $(LDFLAGS) $^ $(LIBS)
 
 make_dir:

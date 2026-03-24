@@ -9,7 +9,8 @@ typedef enum {
     LS = 2,
     RM = 3,
     BYE = 4,
-    RESUME = 5
+    RESUME = 5,
+    UPDATE = 6
 } typereq_t;
 
 typedef struct {

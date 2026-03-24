@@ -10,6 +10,7 @@
 #include <sys/stat.h>
 #include <arpa/inet.h>
 #include "utils.h"
+#include "logs.h"
 
 #ifdef DELAY
 #include <time.h>
@@ -433,8 +434,7 @@ int remove_file(char path[], char *srcdir) {
     }
 }
 
-
-int send_server_response(int connfd, char path[], typereq_t type)
+int send_server_response(int connfd, char path[], typereq_t type, log_t *log)
 {
     response_t *response;
     
@@ -480,6 +480,10 @@ int send_server_response(int connfd, char path[], typereq_t type)
             free(content);
             return r;
         case RM:
+            #ifdef DEBUG
+                printf("%s say \"Dans le RM\"\n", SPEAKER);
+            #endif
+            add(&log, type, path);
             response = malloc(sizeof(response_t));
             if (response == NULL) {
                 return 1;
@@ -497,11 +501,15 @@ int send_server_response(int connfd, char path[], typereq_t type)
                     snprintf(rep_text, sizeof(rep_text), "Error: Could not remove file %s\n", path);
             }
             encode_response(response, (const uint8_t*) rep_text);
+            #ifdef DEBUG
+                printf("%s say \"envoie %s\"\n", SPEAKER, rep_text);
+            #endif
             write_response(response, connfd);
             free(response);
             return NO_ERROR_R;
 
         case PUT:
+            add(&log, type, path);
             response = malloc(sizeof(response_t));
             if (response == NULL) {
                 return 1;
