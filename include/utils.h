@@ -47,4 +47,13 @@ int write_file_to_client_dir(char path[], const uint8_t *content);
  * @return 1 si c'est le cas 0 sinon
  */
 int is_relative_path(char path[]);
+
+/**
+ * @fn int list_dir(char *path, char *content) 
+ * @brief Liste le contenu d'un repetoire a une adresse donnee dans un pointeur passe en parametre
+ * @param path l'adresse du repertoire
+ * @param content le pointeur qui va obtenir le contenu sous la forme 'content\ncontent2'
+ * @return 0 si réussi sans probleme 1 sinon
+ */
+int list_dir(char *path, char **content);
 #endif

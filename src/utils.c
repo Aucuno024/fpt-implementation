@@ -2,7 +2,9 @@
 #include "csapp.h"
 #include <stdint.h>
 #include "string.h"
+#include <dirent.h>
 
+#define SPEAKER "Gyro"
 
 int get_endianess() {
     static uint32_t one = 1;
@@ -110,5 +112,93 @@ int write_file_to_client_dir(char path[], const uint8_t *content)
 int is_relative_path(char path[])
 {
     return path[0] == '~' || path[0] == '/'? 0: 1;
+}
+
+int update(char **content, char *element)
+{
+    size_t s = strlen(element);
+    if(!(*content))
+    {
+        #ifdef DEBUG
+            printf("%s say \"First element added\"\n", SPEAKER);
+        #endif
+        (*content) = malloc(s + 1);
+        if(!(*content))
+            return 1;
+        for(int i = 0; i < s; i++ )
+        {
+            (*content)[i] = element[i];
+        }
+        (*content)[s] = '\0';
+        #ifdef DEBUG
+            printf("%s say \"content value : %s\"\n", SPEAKER, content);
+        #endif
+        return 0;
+    }
+    size_t sc = strlen((*content));
+    char * tmp = realloc((*content), sc + s + 2);
+    if(!tmp)
+        return 1;
+    (*content) = tmp;
+    (*content)[sc] = '\n';
+    for(int i = sc + 1; i < sc + s + 1; i++)
+    {
+        (*content)[i] = element[i - sc - 1];
+    }
+    (*content)[sc + s + 1] = '\0';
+    #ifdef DEBUG
+            printf("%s say \"Content value : %s\"\n", SPEAKER, content);
+    #endif
+    return 0;
+}
+
+int list_dir(char *path, char **content) 
+{
+    char server_path[MAXBUF];
+    if(!build_server_path(path, server_path))
+    {
+        #ifdef DEBUG
+            printf("%s say \"Path non etendu : %s\"\n", SPEAKER, path);
+        #endif
+        return 1;
+    }
+    #ifdef DEBUG
+            printf("%s say \"Path etendu : %s -> %s\"\n", SPEAKER, path, server_path);
+     #endif
+    
+    struct dirent *de;
+    DIR *dr = opendir(server_path);
+    if(!dr)
+    {
+        #ifdef DEBUG
+            printf("%s say \"Ne peux pas ouvrir: %s\"\n", SPEAKER, server_path);
+        #endif
+        int fd = open(server_path, O_RDONLY, 0);
+        if(fd != -1)
+        {
+            #ifdef DEBUG
+                printf("%s say \"Fichier ouvert : %d \"\n", SPEAKER, fd);
+            #endif
+            *content= malloc(sizeof(path) + 1);
+            strcpy(*content, path);
+            return 0;
+        }
+        return 1;
+    }
+     while ((de = readdir(dr)) != NULL)
+    {
+        #ifdef DEBUG
+            printf("%s say \"Dir value : %s\"\n", SPEAKER, de->d_name);
+        #endif
+        if(update(content, de->d_name))
+        {
+             #ifdef DEBUG
+                printf("%s say \"Erreur: %s\"\n", SPEAKER, content);
+            #endif
+            return 1;
+        }
+    }
+    closedir(dr);    
+    return 0;
 }
 
