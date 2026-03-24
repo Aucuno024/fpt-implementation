@@ -50,7 +50,7 @@
 ## Etape IV – Opérations avancées
 
 ### Opérations sur les fichiers
-- [ ] ***(Question 15***) Implémenter commande `ls` : retourner le contenu du répertoire courant du serveur.
+- [x] ***(Question 15***) Implémenter commande `ls` : retourner le contenu du répertoire courant du serveur.
 - [ ] ***(Question 16***) Implémenter commandes `rm` et `put` : suppression / téléversement de fichier ;
 
 ### Sécurité
