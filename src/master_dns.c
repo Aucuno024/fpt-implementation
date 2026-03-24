@@ -20,9 +20,6 @@
 #define SLAVE_PATH "config"
 #endif
 
-
-
-
 void handler_chld(int signal) 
 {
     wait(NULL);
@@ -153,6 +150,7 @@ int main(int argc, char **argv)
             response_t *r = malloc(sizeof(response_t));
             r->endian = get_endianess();
             r->error = 0;
+
             write_cred((char *)r->content, port, (char *)slave_ip[i]);
             write_response(r, connfd);
             free(r);

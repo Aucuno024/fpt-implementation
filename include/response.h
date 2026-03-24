@@ -3,6 +3,7 @@
 #include "csapp.h"
 #include <stdint.h>
 #include "request.h"
+#include "logs.h"
 
 #define BLOCK_SIZE 512  // Taille d'un bloc pour les transferts
 
@@ -73,7 +74,7 @@ int decode_response(response_t *response, uint8_t *content, uint8_t *error);
  * @param type le type de requete
  * @return code d'erreur associe a la reponse
  */
-int send_server_response(int connfd, char path[], typereq_t type);
+int send_server_response(int connfd, char path[], typereq_t type, log_t *log);
 
 /**
  * @fn void send_error(int connfd, int error)

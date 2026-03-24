@@ -10,6 +10,7 @@
 #include <sys/stat.h>
 #include <arpa/inet.h>
 #include "utils.h"
+#include "logs.h"
 
 #ifdef DELAY
 #include <time.h>
@@ -408,7 +409,7 @@ int send_content(int connfd, char *content, size_t size)
     return NO_ERROR_R;
 }
 
-int send_server_response(int connfd, char path[], typereq_t type)
+int send_server_response(int connfd, char path[], typereq_t type, log_t *log)
 {
     response_t *response;
     
@@ -454,6 +455,7 @@ int send_server_response(int connfd, char path[], typereq_t type)
             free(content);
             return r;
         case RM:
+            add(&log, type, path);
             response = malloc(sizeof(response_t));
             if (response == NULL) {
                 return 1;
@@ -464,6 +466,7 @@ int send_server_response(int connfd, char path[], typereq_t type)
             return NO_ERROR_R;
 
         case PUT:
+            add(&log, type, path);
             response = malloc(sizeof(response_t));
             if (response == NULL) {
                 return 1;
