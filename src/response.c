@@ -446,7 +446,13 @@ int send_response(int connfd, char path[], typereq_t type)
                 #endif
                 if(content)
                     free(content);
-
+            }
+            #ifdef DEBUG
+                    printf("%s say \"Parfait: %s\"\n", SPEAKER, content);
+                #endif
+            int r = send_content(connfd, content, strlen(content)); 
+            free(content);
+            return r;
         case RM:
             response = malloc(sizeof(response_t));
             if (response == NULL) {
@@ -479,13 +485,6 @@ int send_response(int connfd, char path[], typereq_t type)
 
                 free(response);
                 return PATH_ERROR_R;
-            }
-            #ifdef DEBUG
-                    printf("%s say \"Parfait: %s\"\n", SPEAKER, content);
-                #endif
-            int r = send_content(connfd, content, strlen(content)); 
-            free(content);
-            return r;
         default:
             response = malloc(sizeof(response_t));
             if (response == NULL) {
