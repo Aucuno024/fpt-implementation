@@ -156,6 +156,16 @@ int receive_file_by_blocks_resume(int connfd, char remote_path[], char local_pat
  * @return 0 si ok, code erreur sinon
  */
 int receive_content(int connfd, int outfd);
+
+/**
+ * @fn int send_content(int connfd, char *content, size_t size)
+ * @brief envoie un contenu quelconque avec une taille defini dans un socket
+ * @param connfd le descripteur ou ecrire le contenu
+ * @param content le contenu a ecrire
+ * @param size la taille du contenu
+ * @return NO_ERROR_R si tout va bien, une erreur sinon
+ */
+int send_content(int connfd, char *content, size_t size);
 #define NO_ERROR_R 0
 #define PATH_ERROR_R 1
 #define TYPE_ERROR_R 2

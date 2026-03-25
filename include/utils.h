@@ -68,4 +68,12 @@ int list_dir(char *path, char **content);
  */
 int get_abs_dest_path_from_src_path(const char *path, char *server_path, const char *dirpath);
 
+/**
+ * @fn int update(char **content, char *element)
+ * @brief Concatene dynamiquement un tableau de caractere a un autre en les separant de \n
+ * @param content un pointeur vers le tableau de caractere principal
+ * @param element le tableau de caractere a ajouter
+ * @return 1 si erreur 0 sinon
+ */
+int update(char **content, char *element);
 #endif

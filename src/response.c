@@ -16,7 +16,7 @@
 #include <time.h>
 #endif
 
-#define SPEAKER "Speaker"
+#define SPEAKER "Pong"
 
 /**
  * @brief Ecrit tous les octets du buffer dans le socket, avec gestion des erreurs

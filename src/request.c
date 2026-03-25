@@ -4,7 +4,7 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <utils.h>
-
+#define SPEAKER "Ping"
 
 int swap_endian_request(request_t *request) {
     if (request == NULL) {
@@ -34,7 +34,13 @@ void write_request(request_t *request, int connfd) {
 }
 
 int encode_request(request_t *request, typereq_t typereq, const char *path) {
+    #ifdef DEBUG
+        printf("%s say :\"Encodage de requete : %d et %s\"\n", SPEAKER, typereq, path);
+    #endif
     if (request == NULL || path == NULL) {
+        #ifdef DEBUG
+            printf("%s say :\"Rquete non encodable: \"\n", SPEAKER);
+        #endif
         return 1;
     }
     memset(request, 0, sizeof(*request));
@@ -42,6 +48,9 @@ int encode_request(request_t *request, typereq_t typereq, const char *path) {
     request->typereq = typereq;
     strncpy(request->path, path, MAXLINE - 1);
     request->path[MAXLINE - 1] = '\0';
+    #ifdef DEBUG
+        printf("%s say :\"Requete encodee :  : %d, %d et %s\"\n", SPEAKER, request->endian, request->typereq, request->path);
+    #endif
     return 0;
 }
 
