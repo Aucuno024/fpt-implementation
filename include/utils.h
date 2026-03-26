@@ -29,18 +29,20 @@ int open_file_r(char path[], int *fd, const char *dirpath);
  * @brief Ecrit le contenu dans un fichier a un chemin donnee
  * @param path le chemin vers le fichier
  * @param content le contenu a ecrire dans le fichier
+ * @param content_size la taille exacte du contenu en octets
  * @return 1 si tout s'est bien passé 0 sinon
  */
-int write_file_from_content(char path[], const uint8_t *content);
+int write_file_from_content(char path[], const uint8_t *content, size_t content_size);
 
 /**
  * @brief Ecrit le contenu dans un fichier a un chemin donnee dans le dossier destdir
  * @param path le chemin vers le fichier
  * @param content le contenu a ecrire dans le fichier
+ * @param content_size la taille exacte du contenu en octets
  * @param dirpath le chemin du dossier de destination
  * @return 1 si tout s'est bien passé 0 sinon
  */
-int write_file_to_dest_dir(char path[], const uint8_t *content, const char *dirpath);
+int write_file_to_dest_dir(char path[], const uint8_t *content, size_t content_size, const char *dirpath);
 
 /**
  * @fn int is_relative_path(char path[])

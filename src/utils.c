@@ -30,7 +30,7 @@ int is_path_in_dirpath(const char *abs_path, const char * dirpath) {
 /**
  * @brief Construit un chemin candidat sous dirpath sans le réduire
  */
-static int build_candidate_path(const char *path, char *candidate_path, size_t candidate_size, const char *dirpath) {
+int build_candidate_path(const char *path, char *candidate_path, size_t candidate_size, const char *dirpath) {
     const char *suffix;
     size_t dir_len;
 
@@ -57,6 +57,27 @@ static int build_candidate_path(const char *path, char *candidate_path, size_t c
     if (snprintf(candidate_path, candidate_size, "%s%s%s", dirpath, (dirpath[dir_len - 1] == '/') ? "" : "/", path) >= (int)candidate_size) {
         return 0;
     }
+    return 1;
+}
+
+/** 
+ * @brief Ecrire tout le contenu dans un descripteur de fichier
+ * @param fd le descripteur de fichier
+ * @param buf le buffer contenant les données à écrire
+ * @param len la taille des données à écrire
+ * @return int 1 si l'écriture est réussie, 0 sinon
+ */
+int write_all_fd(int fd, const uint8_t *buf, size_t len) {
+    size_t written = 0;
+
+    while (written < len) {
+        ssize_t n = rio_writen(fd, (void *)(buf + written), len - written);
+        if (n < 0) {
+            return 0;
+        }
+        written += (size_t)n;
+    }
+
     return 1;
 }
 
@@ -168,18 +189,31 @@ int open_file_r(char path[], int *fd, const char *dirpath)
     return (*fd = open(abs_path, O_RDONLY, 0)) != -1;
 }
 
-int write_file_from_content(char path[], const uint8_t *content)
+int write_file_from_content(char path[], const uint8_t *content, size_t content_size)
 {
     int fd;
+    int ok = 1;
+
+    if (path == NULL || content == NULL) {
+        return 0;
+    }
+
     if ((fd = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0644)) == -1) {
         return 0;
     }
-    write(fd, content, strlen((char *)content));
-    close(fd);
-    return 1;
+
+    if (content_size > 0) {
+        ok = write_all_fd(fd, content, content_size);
+    }
+
+    if (close(fd) < 0) {
+        return 0;
+    }
+
+    return ok;
 }
 
-int write_file_to_dest_dir(char path[], const uint8_t *content, const char *dirpath)
+int write_file_to_dest_dir(char path[], const uint8_t *content, size_t content_size, const char *dirpath)
 {
     char abs_path[MAXLINE];
 
@@ -191,7 +225,7 @@ int write_file_to_dest_dir(char path[], const uint8_t *content, const char *dirp
         return 0;
     }
 
-    return write_file_from_content(abs_path, content);
+    return write_file_from_content(abs_path, content, content_size);
 }
 
 int is_relative_path(char path[])
