@@ -27,6 +27,114 @@ int is_path_in_dirpath(const char *abs_path, const char * dirpath) {
 }
 
 
+/**
+ * @brief Construit un chemin candidat sous dirpath sans le réduire
+ */
+static int build_candidate_path(const char *path, char *candidate_path, size_t candidate_size, const char *dirpath) {
+    const char *suffix;
+    size_t dir_len;
+
+    if (path == NULL || candidate_path == NULL || dirpath == NULL || candidate_size == 0) {
+        return 0;
+    }
+
+    dir_len = strlen(dirpath);
+    if (dir_len == 0) {
+        return 0;
+    }
+
+    if (path[0] == '/') {
+        suffix = path;
+        while (*suffix == '/') {
+            suffix++;
+        }
+        if (snprintf(candidate_path, candidate_size, "%s%s", dirpath, suffix) >= (int)candidate_size) {
+            return 0;
+        }
+        return 1;
+    }
+
+    if (snprintf(candidate_path, candidate_size, "%s%s%s", dirpath, (dirpath[dir_len - 1] == '/') ? "" : "/", path) >= (int)candidate_size) {
+        return 0;
+    }
+    return 1;
+}
+
+
+int get_abs_path_from_src_path(const char *path, char *server_path, const char *dirpath, int require_existing) {
+    char candidate_path[MAXLINE];
+
+    if (path == NULL || server_path == NULL || dirpath == NULL) {
+        return 0;
+    }
+
+    if (!build_candidate_path(path, candidate_path, sizeof(candidate_path), dirpath)) {
+        return 0;
+    }
+
+    if (require_existing) {
+        if (realpath(candidate_path, server_path) == NULL) {
+            server_path[0] = '\0';
+            return 0;
+        }
+
+        if (!is_path_in_dirpath(server_path, dirpath)) {
+            server_path[0] = '\0';
+            return 0;
+        }
+
+        return 1;
+    }
+
+    if (!require_existing) {
+        char parent_path[MAXLINE];
+        char parent_abs[MAXLINE];
+        char *last_sep;
+        const char *filename;
+
+        last_sep = strrchr(candidate_path, '/');
+        if (last_sep == NULL) {
+            return 0;
+        }
+
+        filename = last_sep + 1;
+        if (filename[0] == '\0') {
+            return 0;
+        }
+        if (strcmp(filename, ".") == 0 || strcmp(filename, "..") == 0) {
+            return 0;
+        }
+        if (last_sep == candidate_path) {
+            parent_path[0] = '/';
+            parent_path[1] = '\0';
+        } else {
+            size_t parent_len = (size_t)(last_sep - candidate_path);
+            if (parent_len >= sizeof(parent_path)) {
+                return 0;
+            }
+            memcpy(parent_path, candidate_path, parent_len);
+            parent_path[parent_len] = '\0';
+        }
+
+        if (realpath(parent_path, parent_abs) == NULL) {
+            return 0;
+        }
+
+        if (!is_path_in_dirpath(parent_abs, dirpath)) {
+            return 0;
+        }
+
+        if (snprintf(server_path, MAXLINE, "%s/%s", parent_abs, filename) >= MAXLINE) {
+            return 0;
+        }
+
+        return 1;
+    }
+
+    return 0;
+}
+
+
 /** 
  * @brief Convertir un chemin en chemin absolu depuis le dossier dirpath
  * @param path le chemin à convertir
@@ -34,29 +142,17 @@ int is_path_in_dirpath(const char *abs_path, const char * dirpath) {
  * @param dirpath le chemin du dossier du serveur
  */
 void convert_to_abs_path(const char *path, char *abs_path, const char *dirpath) {
-    char temp_path[MAXLINE];
     if (path == NULL || abs_path == NULL) {
         abs_path[0] = '\0'; // chemin invalide
         return;
     }
-    if (path[0] == '/') {
-        // chemin absolu
-        snprintf(temp_path, MAXLINE, "%s%s", dirpath, path + 1);
-    } else {
-        // chemin relatif
-        snprintf(temp_path, MAXLINE, "%s/%s", dirpath, path);
-    }
-    // convertir le chemin du serveur en chemin absolu
-    if (realpath(temp_path, abs_path) == NULL) {
+
+    if (!get_abs_path_from_src_path(path, abs_path, dirpath, 1)) {
         abs_path[0] = '\0'; // chemin invalide
     }
 }
 int get_abs_dest_path_from_src_path(const char *path, char *server_path, const char *dirpath) {
-    convert_to_abs_path(path, server_path, dirpath);
-    if (server_path[0] == '\0' || !is_path_in_dirpath(server_path, dirpath)) {
-        return 0;
-    }
-    return 1;
+    return get_abs_path_from_src_path(path, server_path, dirpath, 1);
 }
 
 
@@ -85,24 +181,17 @@ int write_file_from_content(char path[], const uint8_t *content)
 
 int write_file_to_dest_dir(char path[], const uint8_t *content, const char *dirpath)
 {
-    if(is_relative_path(path))
-    {
-        char *newpath = malloc(strlen(path) + strlen(dirpath) + 1);
-        int i;
-        for(i = 0; dirpath[i] != '\0'; i++)
-        {
-            newpath[i] = dirpath[i];
-        }
-        for(int j = 0; path[j] != '\0'; j++)
-        {
-            newpath[i++] = path[j];
-        }
-        newpath[i] = '\0';
-        int r = write_file_from_content(newpath, content);
-        free(newpath);
-        return r;
+    char abs_path[MAXLINE];
+
+    if (path == NULL || content == NULL || dirpath == NULL) {
+        return 0;
     }
-    return write_file_from_content(path, content);
+
+    if (!get_abs_path_from_src_path(path, abs_path, dirpath, 0)) {
+        return 0;
+    }
+
+    return write_file_from_content(abs_path, content);
 }
 
 int is_relative_path(char path[])
