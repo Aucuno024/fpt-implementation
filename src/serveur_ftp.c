@@ -228,6 +228,13 @@ int main(int argc, char **argv)
 
                     decode_request(request, &typereq, path);
                     free(request);
+
+                    if (typereq == RM || typereq == PUT) {
+                        add(&log, typereq, path);
+                    }
+
+                    if(typereq == UPDATE)
+                        is_update = 1;
                     #ifdef DEBUG
                     printf("%s say \"%ld bytes reçu\"\n", SPEAKER, strlen(path));
                     printf("%s say \"\t- type de requete : %d\"\n", SPEAKER, typereq);
