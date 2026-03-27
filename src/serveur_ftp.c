@@ -2,6 +2,7 @@
 #include "request.h"
 #include "response.h"
 #include "logs.h"
+#include "utils.h"
 
 #ifndef SLAVE_PORT
 #define SLAVE_PORT 2121
@@ -122,13 +123,33 @@ int coherence(log_t *log, char *master_ip)
             if (slavefd >= 0) {
                 log_t *entry = log;
                 while (entry) {
-                    char update_payload[MAXLINE];
                     response_t ack;
-                    if (snprintf(update_payload, sizeof(update_payload), "%d\n%s", (int)entry->type, entry->path) < (int)sizeof(update_payload)) {
-                        encode_request(&request, UPDATE, update_payload);
+                    if (entry->type == PUT) {
+                        uint8_t ack_content[MAXLINE];
+                        uint8_t ack_error = TYPE_ERROR_R;
+
+                        encode_request(&request, PUT, entry->path);
                         write_request(&request, slavefd);
                         if (read_response(&ack, slavefd)) {
                             break;
+                        }
+                        if (decode_response(&ack, ack_content, &ack_error) || ack_error != NO_ERROR_R || strcmp((char *)ack_content, "READY_PUT") != 0) {
+                            break;
+                        }
+                        if (send_file_by_blocks(slavefd, entry->path, DEFAULT_SERVER_DIR) == CLIENT_DISCONNECTED_R) {
+                            break;
+                        }
+                        if (read_response(&ack, slavefd)) {
+                            break;
+                        }
+                    } else {
+                        char update_payload[MAXLINE];
+                        if (snprintf(update_payload, sizeof(update_payload), "%d\n%s", (int)entry->type, entry->path) < (int)sizeof(update_payload)) {
+                            encode_request(&request, UPDATE, update_payload);
+                            write_request(&request, slavefd);
+                            if (read_response(&ack, slavefd)) {
+                                break;
+                            }
                         }
                     }
                     entry = follow(entry);
