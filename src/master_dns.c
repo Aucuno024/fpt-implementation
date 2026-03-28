@@ -94,10 +94,15 @@ int main(int argc, char **argv)
             #ifdef DEBUG
                 printf("%s say \"Caractere lu : %c\"\n", SPEAKER, buf[j]);
             #endif
-            if(buf[j] != '\n')
-                slave_ip[i][j] = buf[j];
-            else
+            if(buf[j] == '\n' || buf[j] == '\0')
+            {
                 slave_ip[i][j]='\0';
+                break;
+            }
+            if(buf[j] == '\r')
+                slave_ip[i][j] = '\0';
+            else
+                slave_ip[i][j] = buf[j];
         }
         slave_ip[i][j] = '\0';
         connected++;
@@ -209,7 +214,9 @@ int main(int argc, char **argv)
                 char *content = NULL;
                 for(int j = 0; j < connected; j++)
                 {
-                    if(strcmp(slave_ip[j], client_ip_string))
+                    if(slave_ip[j][0] == '\0')
+                        continue;
+                    if(strcmp(slave_ip[j], client_ip_string) != 0)
                     {
                         update(&content, slave_ip[j]);
                     }
