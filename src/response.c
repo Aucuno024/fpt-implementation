@@ -437,6 +437,7 @@ int remove_file(char path[], char *srcdir) {
 int send_server_response(int connfd, char path[], typereq_t type, log_t *log)
 {
     response_t *response;
+    (void)log;
     
     switch(type)
     {
@@ -483,7 +484,6 @@ int send_server_response(int connfd, char path[], typereq_t type, log_t *log)
             #ifdef DEBUG
                 printf("%s say \"Dans le RM\"\n", SPEAKER);
             #endif
-            add(&log, type, path);
             response = malloc(sizeof(response_t));
             if (response == NULL) {
                 return 1;
@@ -509,7 +509,6 @@ int send_server_response(int connfd, char path[], typereq_t type, log_t *log)
             return NO_ERROR_R;
 
         case PUT:
-            add(&log, type, path);
             response = malloc(sizeof(response_t));
             if (response == NULL) {
                 return 1;
