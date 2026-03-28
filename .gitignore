@@ -5,8 +5,9 @@ obj/*
 .vscode/
 serverdir/*
 clientdir/*
-config_master
-config_slave
+config_master*
+config*
+config_slave*
 cours.cls
 
 # Prerequisites
