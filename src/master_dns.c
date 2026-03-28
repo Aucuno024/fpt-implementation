@@ -206,19 +206,24 @@ int main(int argc, char **argv)
             
             if(connected && typereq == GET)
             {
-                char * content;
-                for(int j = 0; i < connected; j++)
+                char *content = NULL;
+                for(int j = 0; j < connected; j++)
                 {
-                    if(strcmp(slave_ip[i], client_ip_string))
+                    if(strcmp(slave_ip[j], client_ip_string))
                     {
-                        update(&content, slave_ip[i]);
+                        update(&content, slave_ip[j]);
                     }
                 }
                 #ifdef DEBUG
                     printf("%s say \"Send %s to %s\"\n", SPEAKER, content, client_ip_string);
                 #endif
-                send_content(connfd, content, strlen(content));
-                free(content);
+                if(content)
+                {
+                    send_content(connfd, content, strlen(content));
+                    free(content);
+                } else {
+                    send_content(connfd, "", 0);
+                }
             } else 
             {
                 send_error(connfd, SLAVE_ERROR);

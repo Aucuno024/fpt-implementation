@@ -71,7 +71,7 @@ int coherence(log_t *log, char *master_ip)
     request_t request;
     encode_request(&request, GET, "");
     write_request(&request, clientfd);
-
+    
     if (pipe(fds) == -1) {
         Close(clientfd);
         return 1;

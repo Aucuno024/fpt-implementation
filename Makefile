@@ -1,4 +1,4 @@
-.PHONY: all clean fclean make_dir test
+.PHONY: all clean fclean make_dir test re
 .SUFFIXES:
 CC=gcc
 SRCDIR=src
@@ -77,5 +77,5 @@ clean:
 
 fclean:
 	-make clean
-	-rm -rf $(EXECDIR)
+	-rfm -rf $(EXECDIR)
 	-rm -rf $(DEFAULT_CLIENT_DIR) $(DEFAULT_SERVER_DIR)
