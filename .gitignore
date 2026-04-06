@@ -5,10 +5,15 @@ obj/*
 .vscode/
 serverdir/*
 clientdir/*
-config_master*
-config*
-config_slave*
+config_master
+config
+config_slave
 cours.cls
+rapport.cls
+compte_rendu.tex
+compte_rendu.generated.tex
+compte_rendu.pdf
+compile_compte_rendu.sh
 
 # Prerequisites
 *.d
