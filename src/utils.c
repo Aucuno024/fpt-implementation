@@ -403,3 +403,12 @@ int list_dir(char *path, char **content)
     return 0;
 }
 
+char **split(char *str, char chr, int size_str, int *size_splited)
+{
+    int s = 0;
+    char ** ptr;
+    for(int i = 0; i < size_str; i++) {
+
+    }
+    return ptr;
+}
