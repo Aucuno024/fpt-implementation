@@ -255,7 +255,10 @@ int open_file_w(char path[], int *fd, const char *dirpath)
     if (!ensure_parent_dirs_for_file(abs_path)) {
         return 0;
     }
-
+    struct stat st;
+    stat(abs_path, &st);
+    if(S_ISDIR(st.st_mode))
+        return 0;
     return (*fd = open(abs_path, O_WRONLY | O_CREAT | O_TRUNC, 0644)) != -1;
 }
 
