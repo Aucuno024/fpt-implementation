@@ -4,6 +4,7 @@
 #include "string.h"
 #include <errno.h>
 #include <dirent.h>
+#include <sys/stat.h>s
 
 #define SPEAKER "Gyro"
 
@@ -233,6 +234,10 @@ int open_file_r(char path[], int *fd, const char *dirpath)
     if (!get_abs_dest_path_from_src_path(path, abs_path, dirpath)) {
         return 0;
     }
+    struct stat st;
+    stat(abs_path, &st);
+    if(S_ISDIR(st.st_mode))
+        return 0;
     return (*fd = open(abs_path, O_RDONLY, 0)) != -1;
 }
 
