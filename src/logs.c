@@ -3,9 +3,10 @@
 #include <string.h>
 #include <stdlib.h>
 
-int add(log_t **log, typereq_t type, const char *path)
+int add(log_t **logptr, typereq_t type, const char *path)
 {
     size_t path_len;
+    log_t *log = *logptr;
 
     if(!log || !path)
         return 1;
@@ -14,17 +15,17 @@ int add(log_t **log, typereq_t type, const char *path)
     if(path_len >= MAXBUF)
         return 1;
 
-    if(!(*log))
+    if(!log)
     {
-        (*log) = malloc(sizeof(log_t));
-        if(!(*log))
+        log = malloc(sizeof(log_t));
+        if(!log)
             return 1;
-        memcpy((*log)->path, path, path_len + 1);
-        (*log)->type=type;
-        (*log)->follow = NULL;
+        memcpy(log->path, path, path_len + 1);
+        log->type=type;
+        log->follow = NULL;
         return 0;
     }
-    log_t * c = (*log);
+    log_t *c = log;
     while(c->follow)
         c = c->follow;
     c->follow = malloc(sizeof(log_t));
