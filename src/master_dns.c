@@ -97,6 +97,7 @@ int main(int argc, char **argv)
     Rio_readinitb(&rio, fd);
     char buf[MAXLINE];
     int n = 0;
+
     for(int i = 0; i < NB_SLAVE && (n = Rio_readlineb(&rio, buf, MAXLINE)); i++)
     {
         int j = 0;
@@ -105,22 +106,30 @@ int main(int argc, char **argv)
             #ifdef DEBUG
                 printf("%s say \"Caractere lu : %c\"\n", SPEAKER, buf[j]);
             #endif
+
             if(buf[j] == '\n' || buf[j] == '\0')
             {
                 slave_ip[i][j]='\0';
                 break;
             }
+
             if(buf[j] == '\r')
+            {
                 slave_ip[i][j] = '\0';
-            else
+            } else
+            {
                 slave_ip[i][j] = buf[j];
+            }
         }
         slave_ip[i][j] = '\0';
         connected++;
     }
+
     Close(fd);
     pid_t pid = Fork();
-    if(pid) {
+
+    if(pid) 
+    {
         listenfd = Open_listenfd(PORT);
     } else 
     {
@@ -131,20 +140,20 @@ int main(int argc, char **argv)
         printf("%s (%d) say \"client len :%u listenfd : %d\"\n", SPEAKER, pid, clientlen, listenfd);
     #endif
    
-    while (1) {
+    while (1) 
+    {
         if(pid)
         {
+            //Master client side
             connfd = Accept(listenfd, (SA *)&clientaddr, &clientlen);
-            Getnameinfo((SA *) &clientaddr, clientlen,
-                            client_hostname, MAX_NAME_LEN, 0, 0, 0);
-                
-            Inet_ntop(AF_INET, &clientaddr.sin_addr, client_ip_string,
-                    INET_ADDRSTRLEN); 
+            Getnameinfo((SA *) &clientaddr, clientlen, client_hostname, MAX_NAME_LEN, 0, 0, 0);
+            Inet_ntop(AF_INET, &clientaddr.sin_addr, client_ip_string, INET_ADDRSTRLEN); 
+            request_t* request = malloc(sizeof(request_t));
+
             #ifdef DEBUG
                 printf("%s say \"Server connected to %s (%s)\"\n", SPEAKER, client_hostname, client_ip_string);
             #endif
 
-            request_t* request = malloc(sizeof(request_t));
             if (request == NULL) 
             {
                 #ifdef DEBUG
@@ -153,19 +162,22 @@ int main(int argc, char **argv)
                 Close(connfd);
                 continue;
             }
+
             if (read_request(request, connfd)) 
             {
-            #ifdef DEBUG
-                printf("%s say \"Failed to read request (size: %ld)\"\n", SPEAKER, sizeof(request_t));
-            #endif
-            free(request);
-            send_error(connfd, ERROR_READ_REQUEST);
-            break;
+                #ifdef DEBUG
+                    printf("%s say \"Failed to read request (size: %ld)\"\n", SPEAKER, sizeof(request_t));
+                #endif
+                free(request);
+                send_error(connfd, ERROR_READ_REQUEST);
+                break;
             }
+
             char content[MAX_PASS];
             typereq_t typereq;
             decode_request(request, &typereq, content);
             free(request);
+
             if(strcmp(crypt(content, ALT), PASSWORD))
             {
                 #ifdef DEBUG
@@ -174,9 +186,11 @@ int main(int argc, char **argv)
                 send_error(connfd, PASSWORD_ERROR);
                 break;
             }
+
             #ifdef DEBUG
                     printf("%s say \"check request type\"\n", SPEAKER);
             #endif
+
             if(connected && typereq == GET)
             {
             
@@ -198,16 +212,16 @@ int main(int argc, char **argv)
             
         } else
         {
+            // Master slave side
             connfd = Accept(listenfd, (SA *)&clientaddr, &clientlen);
-            Getnameinfo((SA *) &clientaddr, clientlen,
-                            client_hostname, MAX_NAME_LEN, 0, 0, 0);
-                
-            Inet_ntop(AF_INET, &clientaddr.sin_addr, client_ip_string,
-                    INET_ADDRSTRLEN); 
+            Getnameinfo((SA *) &clientaddr, clientlen, client_hostname, MAX_NAME_LEN, 0, 0, 0);
+            Inet_ntop(AF_INET, &clientaddr.sin_addr, client_ip_string, INET_ADDRSTRLEN); 
+            request_t* request = malloc(sizeof(request_t));
+
             #ifdef DEBUG
                 printf("%s say \"Server connected to slave %s (%s)\"\n", SPEAKER, client_hostname, client_ip_string);
             #endif
-            request_t* request = malloc(sizeof(request_t));
+            
             if (request == NULL) 
             {
                 #ifdef DEBUG

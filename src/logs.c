@@ -10,8 +10,9 @@ int add(log_t **logptr, typereq_t type, const char *path)
 
     if(!log || !path)
         return 1;
-
+        
     path_len = strnlen(path, MAXBUF);
+
     if(path_len >= MAXBUF)
         return 1;
 
@@ -25,12 +26,15 @@ int add(log_t **logptr, typereq_t type, const char *path)
         log->follow = NULL;
         return 0;
     }
+
     log_t *c = log;
     while(c->follow)
         c = c->follow;
+    
     c->follow = malloc(sizeof(log_t));
     if(!c->follow)
         return 1;
+    
     c = c->follow;
     memcpy(c->path, path, path_len + 1);
     c->type = type;
@@ -42,6 +46,7 @@ log_t *follow(log_t *log)
 {
     if(!log)
         return NULL;
+        
     return log->follow;
 }
 

@@ -6,63 +6,78 @@
 #include <utils.h>
 #define SPEAKER "Ping"
 
-int swap_endian_request(request_t *request) {
-    if (request == NULL) {
+int swap_endian_request(request_t *request) 
+{
+    if (request == NULL) 
         return 1;
-    }
+    
     // Pour l'instant on swap que le champ typereq (les autres champs sont des octets)
     assert(sizeof(typereq_t) == 4);
     request->typereq = (typereq_t) ((request->typereq >> 24) | ((request->typereq << 8) & 0x00FF0000) | ((request->typereq >> 8) & 0x0000FF00) | (request->typereq << 24));
+
     return 0;
 }
 
 int read_request(request_t *request, int connfd)
 {
     size_t n = 0;
-    if (request == NULL) {
+
+    if (request == NULL) 
         return 1;
-    }
+    
     rio_t rio;
 
     Rio_readinitb(&rio, connfd);
     n = Rio_readnb(&rio, request, sizeof(request_t));
+
     return n != sizeof(request_t);
 }
 
-void write_request(request_t *request, int connfd) {
+void write_request(request_t *request, int connfd) 
+{
     Rio_writen(connfd, request, sizeof(request_t));
 }
 
-int encode_request(request_t *request, typereq_t typereq, const char *path) {
+int encode_request(request_t *request, typereq_t typereq, const char *path) 
+{
     #ifdef DEBUG
         printf("%s say :\"Encodage de requete : %d et %s\"\n", SPEAKER, typereq, path);
     #endif
-    if (request == NULL || path == NULL) {
+
+    if (request == NULL || path == NULL) 
+    {
         #ifdef DEBUG
             printf("%s say :\"Rquete non encodable: \"\n", SPEAKER);
         #endif
+
         return 1;
     }
+
     memset(request, 0, sizeof(*request));
     request->endian = get_endianess();
     request->typereq = typereq;
     strncpy(request->path, path, MAXLINE - 1);
     request->path[MAXLINE - 1] = '\0';
+
     #ifdef DEBUG
         printf("%s say :\"Requete encodee :  : %d, %d et %s\"\n", SPEAKER, request->endian, request->typereq, request->path);
     #endif
+
     return 0;
 }
 
-int decode_request(request_t *request, typereq_t *typereq, char *path) {
-    if (request == NULL || typereq == NULL || path == NULL) {
+int decode_request(request_t *request, typereq_t *typereq, char *path) 
+{
+    if (request == NULL || typereq == NULL || path == NULL) 
         return 1;
-    }
-    if (request->endian != get_endianess() && swap_endian_request(request) != 0) return 1;
+    
+    if (request->endian != get_endianess() && swap_endian_request(request) != 0) 
+        return 1;
     
     *typereq = request->typereq;
     strncpy(path, request->path, MAXLINE - 1);
     path[MAXLINE - 1] = '\0';
+    
     return 0;
 }
 

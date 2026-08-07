@@ -25,11 +25,13 @@
  * @param len la taille du buffer
  * @return int 0 si l'écriture a réussi, 1 sinon
  */
-int socket_write_all(int fd, const void *buf, size_t len) {
+int socket_write_all(int fd, const void *buf, size_t len) 
+{
     ssize_t nw = rio_writen(fd, (void *)buf, len);
-    if (nw != (ssize_t)len) {
+
+    if (nw != (ssize_t)len) 
         return 1;
-    }
+    
     return 0;
 }
 
@@ -40,19 +42,22 @@ int socket_write_all(int fd, const void *buf, size_t len) {
  * @param dest_size la taille du buffer de destination
  * @return int 0 si le chemin a été construit, 1 sinon
  */
-int build_client_dest_path(const char *path, char *dest, size_t dest_size) {
-    if (path == NULL || dest == NULL || dest_size == 0) {
+int build_client_dest_path(const char *path, char *dest, size_t dest_size) 
+{
+    if (path == NULL || dest == NULL || dest_size == 0) 
         return 1;
-    }
+    
 
-    if (is_relative_path((char *)path)) {
-        if (snprintf(dest, dest_size, "%s%s", DEFAULT_CLIENT_DIR, path) >= (int)dest_size) {
+    if (is_relative_path((char *)path)) 
+    {
+        if (snprintf(dest, dest_size, "%s%s", DEFAULT_CLIENT_DIR, path) >= (int)dest_size) 
             return 1;
-        }
-    } else {
-        if (snprintf(dest, dest_size, "%s", path) >= (int)dest_size) {
+        
+    } else 
+    {
+        if (snprintf(dest, dest_size, "%s", path) >= (int)dest_size) 
             return 1;
-        }
+        
     }
 
     return 0;
@@ -67,17 +72,16 @@ int build_client_dest_path(const char *path, char *dest, size_t dest_size) {
  * @param meta_size  la taille du buffer meta_path
  * @return int 
  */
-int build_partial_paths(const char *base_path, char *part_path, size_t part_size, char *meta_path, size_t meta_size) {
-    if (base_path == NULL || part_path == NULL || meta_path == NULL) {
+int build_partial_paths(const char *base_path, char *part_path, size_t part_size, char *meta_path, size_t meta_size) 
+{
+    if (base_path == NULL || part_path == NULL || meta_path == NULL) 
         return 1;
-    }
 
-    if (snprintf(part_path, part_size, "%s.part", base_path) >= (int)part_size) {
+    if (snprintf(part_path, part_size, "%s.part", base_path) >= (int)part_size) 
         return 1;
-    }
-    if (snprintf(meta_path, meta_size, "%s.part.meta", base_path) >= (int)meta_size) {
+    
+    if (snprintf(meta_path, meta_size, "%s.part.meta", base_path) >= (int)meta_size) 
         return 1;
-    }
 
     return 0;
 }
@@ -87,30 +91,32 @@ int build_partial_paths(const char *base_path, char *part_path, size_t part_size
  * @param file_path  le chemin complet du fichier
  * @return int 0 si succes, 1 sinon
  */
-int ensure_parent_dirs(const char *file_path) {
+int ensure_parent_dirs(const char *file_path) 
+{
     char tmp[MAXLINE];
     char *p;
 
-    if (file_path == NULL) {
+    if (file_path == NULL) 
         return 1;
-    }
 
-    if (snprintf(tmp, sizeof(tmp), "%s", file_path) >= (int)sizeof(tmp)) {
+    if (snprintf(tmp, sizeof(tmp), "%s", file_path) >= (int)sizeof(tmp)) 
         return 1;
-    }
+    
     p = tmp;
-    if (*p == '/') {
+
+    if (*p == '/') 
         p++;
-    }
-    for (; *p != '\0'; p++) {
-        if (*p != '/') {
+    
+    for (; *p != '\0'; p++) 
+    {
+        if (*p != '/') 
             continue;
-        }
 
         *p = '\0';
-        if (tmp[0] != '\0' && mkdir(tmp, 0755) != 0 && errno != EEXIST) { // mettre les perms a 0755 
+
+        if (tmp[0] != '\0' && mkdir(tmp, 0755) != 0 && errno != EEXIST)  // mettre les perms a 0755 
             return 1;
-        }
+        
         *p = '/';
     }
 
@@ -125,35 +131,36 @@ int ensure_parent_dirs(const char *file_path) {
  * @param offset  l'offset déjà reçu du fichier
  * @return int 
  */
-int write_part_meta(const char *meta_path, const char *remote_path, uint32_t offset) {
+int write_part_meta(const char *meta_path, const char *remote_path, uint32_t offset) 
+{
     char tmp_path[MAXLINE];
     FILE *f;
 
-    if (meta_path == NULL || remote_path == NULL) {
+    if (meta_path == NULL || remote_path == NULL) 
         return 1;
-    }
-
-    if (snprintf(tmp_path, sizeof(tmp_path), "%s.tmp", meta_path) >= (int)sizeof(tmp_path)) {
+    
+    if (snprintf(tmp_path, sizeof(tmp_path), "%s.tmp", meta_path) >= (int)sizeof(tmp_path)) 
         return 1;
-    }
-
+    
     f = fopen(tmp_path, "w");
-    if (f == NULL) {
+    if (f == NULL) 
         return 1;
-    }
-
-    if (fprintf(f, "%s\n%u\n", remote_path, offset) < 0) {
+    
+    if (fprintf(f, "%s\n%u\n", remote_path, offset) < 0) 
+    {
         fclose(f);
         unlink(tmp_path);
         return 1;
     }
 
-    if (fclose(f) != 0) {
+    if (fclose(f) != 0) 
+    {
         unlink(tmp_path);
         return 1;
     }
 
-    if (rename(tmp_path, meta_path) != 0) {
+    if (rename(tmp_path, meta_path) != 0) 
+    {
         unlink(tmp_path);
         return 1;
     }
@@ -168,16 +175,18 @@ int write_part_meta(const char *meta_path, const char *remote_path, uint32_t off
  * @param error  le code d'erreur à envoyer
  * @return int 
  */
-int send_error_header(int connfd, uint8_t error) {
+int send_error_header(int connfd, uint8_t error) 
+{
     transfer_header_t error_header;
     memset(&error_header, 0, sizeof(error_header));
     error_header.endian = get_endianess();
     error_header.total_size = 0;
     error_header.block_size = BLOCK_SIZE;
     error_header.error = error;
-    if (socket_write_all(connfd, &error_header, sizeof(transfer_header_t)) != 0) {
+
+    if (socket_write_all(connfd, &error_header, sizeof(transfer_header_t)) != 0) 
         return CLIENT_DISCONNECTED_R;
-    }
+    
     return error;
 }
 
@@ -190,97 +199,108 @@ int send_error_header(int connfd, uint8_t error) {
  * @param offset_out  un pointeur où stocker l'offset de reprise extrait
  * @return int 
  */
-int parse_resume_data(const char *data, char *path_out, size_t path_out_size, uint32_t *offset_out) {
+int parse_resume_data(const char *data, char *path_out, size_t path_out_size, uint32_t *offset_out) 
+{
     const char *sep;
     size_t path_len;
     char *endptr;
     unsigned long offset;
 
-    if (data == NULL || path_out == NULL || offset_out == NULL) {
+    if (data == NULL || path_out == NULL || offset_out == NULL) 
         return 1;
-    }
 
     sep = strchr(data, '\n');
-    if (sep == NULL) {
+
+    if (sep == NULL) 
         return 1;
-    }
 
     path_len = (size_t)(sep - data);
-    if (path_len == 0 || path_len >= path_out_size) {
+
+    if (path_len == 0 || path_len >= path_out_size) 
         return 1;
-    }
 
     memcpy(path_out, data, path_len);
     path_out[path_len] = '\0';
 
-    if (*(sep + 1) == '\0') {
+    if (*(sep + 1) == '\0') 
         return 1;
-    }
 
     offset = strtoul(sep + 1, &endptr, 10);
-    if (endptr == sep + 1 || *endptr != '\0' || offset > UINT32_MAX) {
+
+    if (endptr == sep + 1 || *endptr != '\0' || offset > UINT32_MAX) 
         return 1;
-    }
 
     *offset_out = (uint32_t)offset;
     return 0;
 }
 
 
-int swap_endian_response(response_t *response) {
-    if (response == NULL) {
+int swap_endian_response(response_t *response) 
+{
+    if (response == NULL) 
         return 1;
-    }
+
     // Pour l'instant rien a swap dans la reponse (que des octets)
     return 0;
 }
 
-int read_response(response_t *response, int connfd) {
+int read_response(response_t *response, int connfd) 
+{
     size_t n = 0;
-    if (response == NULL) {
+
+    if (response == NULL) 
         return 1;
-    }
+    
     rio_t rio;
 
     Rio_readinitb(&rio, connfd);
     n = Rio_readnb(&rio, response, sizeof(response_t));
+
     return n != sizeof(response_t);
 }
 
-void write_response(response_t *response, int connfd) {
-    if (response == NULL) {
+void write_response(response_t *response, int connfd) 
+{
+    if (response == NULL) 
         return;
-    }
+    
     socket_write_all(connfd, response, sizeof(response_t));
 }
 
-int encode_response(response_t *response, const uint8_t *content) {
-    if (response == NULL || content == NULL) {
+int encode_response(response_t *response, const uint8_t *content) 
+{
+    if (response == NULL || content == NULL) 
         return 1;
-    }
+    
     memset(response, 0, sizeof(*response));
     response->endian = get_endianess();
     response->error = NO_ERROR_R;
     strncpy((char *)response->content, (const char *)content, MAXLINE - 1);
     response->content[MAXLINE - 1] = '\0';
+
     return 0;
 }
 
-int decode_response(response_t *response, uint8_t *content, uint8_t *error) {
-    if (response == NULL || content == NULL || error == NULL) {
+int decode_response(response_t *response, uint8_t *content, uint8_t *error) 
+{
+    if (response == NULL || content == NULL || error == NULL) 
         return 1;
-    }
-    if (response->endian != get_endianess() && swap_endian_response(response) != 0) return 1;
+    
+    if (response->endian != get_endianess() && swap_endian_response(response) != 0) 
+        return 1;
     
     strncpy((char *)content, (const char *)response->content, MAXLINE - 1);
     content[MAXLINE - 1] = '\0';
     *error = response->error;
+
     return 0;
 }
 
 // Swap les bytes du endian du header
-int swap_endian_header(transfer_header_t *header) {
-    if (!header) return 1;
+int swap_endian_header(transfer_header_t *header) 
+{
+    if (!header) 
+        return 1;
 
     header->total_size = ntohl(header->total_size);
     header->block_size = ntohs(header->block_size);
@@ -288,7 +308,8 @@ int swap_endian_header(transfer_header_t *header) {
     return 0;
 }
 
-int send_transfer_header(int connfd, uint32_t total_size) {
+int send_transfer_header(int connfd, uint32_t total_size) 
+{
     transfer_header_t header;
     memset(&header, 0, sizeof(header));
     header.endian = get_endianess();
@@ -299,10 +320,10 @@ int send_transfer_header(int connfd, uint32_t total_size) {
     return socket_write_all(connfd, &header, sizeof(transfer_header_t));
 }
 
-int send_data_block(int connfd, uint16_t block_num, const uint8_t *data, uint16_t data_size) {
-    if (data == NULL || data_size > BLOCK_SIZE) {
+int send_data_block(int connfd, uint16_t block_num, const uint8_t *data, uint16_t data_size) 
+{
+    if (data == NULL || data_size > BLOCK_SIZE) 
         return 1;
-    }
     
     data_block_t block;
     memset(&block, 0, sizeof(block));
@@ -314,36 +335,40 @@ int send_data_block(int connfd, uint16_t block_num, const uint8_t *data, uint16_
 }
 
 
-int send_file_by_blocks_from_offset(int connfd, char path[], uint32_t start_offset, char *srcdir) {
+int send_file_by_blocks_from_offset(int connfd, char path[], uint32_t start_offset, char *srcdir) 
+{
     int fd;
     struct stat st;
     uint32_t file_size = 0;
     
     // Ouvrir le fichier en lecture d'abord
-    if (!open_file_r(path, &fd, srcdir)) {
+    if (!open_file_r(path, &fd, srcdir)) 
         return send_error_header(connfd, PATH_ERROR_R);
-    }
     
     // Obtenir la taille du fichier via fstat
-    if (fstat(fd, &st) < 0) {
+    if (fstat(fd, &st) < 0) 
+    {
         Close(fd);
         return send_error_header(connfd, PATH_ERROR_R);
     }
     
     file_size = (uint32_t)st.st_size;
 
-    if (start_offset > file_size) {
+    if (start_offset > file_size) 
+    {
         Close(fd);
         return send_error_header(connfd, OFFSET_ERROR_R);
     }
     
     // Envoyer le header de transfert
-    if (send_transfer_header(connfd, file_size) != 0) {
+    if (send_transfer_header(connfd, file_size) != 0) 
+    {
         Close(fd);
         return CLIENT_DISCONNECTED_R;
     }
 
-    if (lseek(fd, (off_t)start_offset, SEEK_SET) < 0) {
+    if (lseek(fd, (off_t)start_offset, SEEK_SET) < 0) 
+    {
         Close(fd);
         return 1;
     }
@@ -356,39 +381,46 @@ int send_file_by_blocks_from_offset(int connfd, char path[], uint32_t start_offs
     uint16_t block_num = (uint16_t)(start_offset / BLOCK_SIZE);
     uint32_t total_sent = start_offset;
     
-    while (total_sent < file_size) {
+    while (total_sent < file_size) 
+    {
         // Lire un bloc
         size_t to_read = (file_size - total_sent > BLOCK_SIZE) ? BLOCK_SIZE : (file_size - total_sent);
         size_t n = Rio_readnb(&rio, buffer, to_read);
         
-        if (n == 0) {
+        if (n == 0) 
+        {
             // EOF atteint
             Close(fd);
             return 1;
         }
         
         // Envoyer le bloc
-        if (send_data_block(connfd, block_num, buffer, (uint16_t)n) != 0) {
+        if (send_data_block(connfd, block_num, buffer, (uint16_t)n) != 0) 
+        {
             Close(fd);
             return CLIENT_DISCONNECTED_R;
         }
         
         total_sent += n;
         block_num++;
+
         #ifdef DELAY
         // Simuler un delai
-        if (total_sent < file_size) {
+        if (total_sent < file_size) 
+        {
             sleep(DELAY);
         }
         #endif
     }
     
     Close(fd);
+
     return NO_ERROR_R;
 }
 
 
-int send_file_by_blocks(int connfd, char path[], char *srcdir) {
+int send_file_by_blocks(int connfd, char path[], char *srcdir) 
+{
     return send_file_by_blocks_from_offset(connfd, path, 0, srcdir);
 }
 
@@ -403,6 +435,7 @@ int send_content(int connfd, char *content, size_t size)
         #ifdef DELAY
             sleep(1);
         #endif
+
         if(send_data_block(connfd, block_num++, (const uint8_t *)(content+i), i + BLOCK_SIZE <= size? BLOCK_SIZE: size - i))
             return CLIENT_DISCONNECTED_R;
     }
@@ -420,15 +453,20 @@ int send_content(int connfd, char *content, size_t size)
  */
 int remove_file(char path[], char *srcdir) {
     char full_path[MAXLINE];
-    if (get_abs_dest_path_from_src_path(path, full_path, srcdir) != 1) {
+
+    if (get_abs_dest_path_from_src_path(path, full_path, srcdir) != 1) 
         return 2; // erreur de chemin
-    }
-    if (unlink(full_path) == 0) {
+    
+    if (unlink(full_path) == 0) 
+    {
         return 0; // succès
-    } else {
-        if (errno == ENOENT) {
+    } else 
+    {
+        if (errno == ENOENT) 
+        {
             return 1; // fichier non trouvé
-        } else {
+        } else 
+        {
             return 2; // autre erreur
         }
     }
@@ -447,50 +485,63 @@ int send_server_response(int connfd, char path[], typereq_t type, log_t *log)
         case RESUME: {
             char resume_path[MAXLINE];
             uint32_t start_offset = 0;
-            if (parse_resume_data(path, resume_path, sizeof(resume_path), &start_offset) != 0) {
+
+            if (parse_resume_data(path, resume_path, sizeof(resume_path), &start_offset) != 0) 
+            {
                 send_error(connfd, TYPE_ERROR_R);
                 return TYPE_ERROR_R;
             }
+
             return send_file_by_blocks_from_offset(connfd, resume_path, start_offset, DEFAULT_SERVER_DIR);
         }
             
         case BYE:
             response = malloc(sizeof(response_t));
-            if (response == NULL) {
+
+            if (response == NULL) 
                 return 1;
-            }
+            
             encode_response(response, (const uint8_t*) "BYE\n");
             write_response(response, connfd);
             free(response);
+
             return NO_ERROR_R;
         
         case LS:
             char *content = NULL;
+
             if(list_dir(path, &content))
             {
                 #ifdef DEBUG
                     printf("%s say \"Erreur : %s\"\n", SPEAKER, content);
                 #endif
+
                 if(content)
                     free(content);
             }
+
             #ifdef DEBUG
                     printf("%s say \"Parfait: %s\"\n", SPEAKER, content);
-                #endif
+            #endif
+
             int r = send_content(connfd, content, strlen(content)); 
             free(content);
+
             return r;
         case RM:
             #ifdef DEBUG
                 printf("%s say \"Dans le RM\"\n", SPEAKER);
             #endif
+
             response = malloc(sizeof(response_t));
-            if (response == NULL) {
+
+            if (response == NULL) 
                 return 1;
-            }
+            
             char rep_text[MAXLINE];
 
-            switch (remove_file(path, DEFAULT_SERVER_DIR)) {
+            switch (remove_file(path, DEFAULT_SERVER_DIR)) 
+            {
                 case 0:
                     snprintf(rep_text, sizeof(rep_text), "File %s removed successfully\n", path);
                     break;
@@ -500,56 +551,66 @@ int send_server_response(int connfd, char path[], typereq_t type, log_t *log)
                 default:
                     snprintf(rep_text, sizeof(rep_text), "Error: Could not remove file %s\n", path);
             }
+
             encode_response(response, (const uint8_t*) rep_text);
+
             #ifdef DEBUG
                 printf("%s say \"envoie %s\"\n", SPEAKER, rep_text);
             #endif
+            
             write_response(response, connfd);
             free(response);
             return NO_ERROR_R;
 
         case PUT:
             response = malloc(sizeof(response_t));
-            if (response == NULL) {
+
+            if (response == NULL) 
                 return 1;
-            }
+            
             encode_response(response, (const uint8_t*) "READY_PUT");
             write_response(response, connfd);
             free(response);
+            
+            int put_result = receive_file_by_blocks_to_path(connfd, path, DEFAULT_SERVER_DIR, 0, NULL);
+
+            if (put_result == CLIENT_DISCONNECTED_R) 
+                return CLIENT_DISCONNECTED_R;
+            
+
+            response = malloc(sizeof(response_t));
+
+            if (response == NULL) 
+                return 1;
+            
+
+            if (put_result == NO_ERROR_R) 
             {
-                int put_result = receive_file_by_blocks_to_path(connfd, path, DEFAULT_SERVER_DIR, 0, NULL);
-                if (put_result == CLIENT_DISCONNECTED_R) {
-                    return CLIENT_DISCONNECTED_R;
-                }
-
-                response = malloc(sizeof(response_t));
-                if (response == NULL) {
-                    return 1;
-                }
-
-                if (put_result == NO_ERROR_R) {
-                    encode_response(response, (const uint8_t*) "PUT completed successfully");
-                } else {
-                    char put_error_text[MAXLINE];
-                    snprintf(put_error_text, sizeof(put_error_text), "PUT failed with error %d", put_result);
-                    encode_response(response, (const uint8_t*) put_error_text);
-                    response->error = put_result;
-                }
-
-                write_response(response, connfd);
-                free(response);
-                return put_result;
+                encode_response(response, (const uint8_t*) "PUT completed successfully");
+            } else 
+            {
+                char put_error_text[MAXLINE];
+                snprintf(put_error_text, sizeof(put_error_text), "PUT failed with error %d", put_result);
+                encode_response(response, (const uint8_t*) put_error_text);
+                response->error = put_result;
             }
 
-        case UPDATE: {
+            write_response(response, connfd);
+            free(response);
+
+            return put_result;
+
+        case UPDATE: 
+        {
             char *sep;
             char *endptr;
             long parsed_type;
             typereq_t forwarded_type;
             char *forwarded_path;
-
             sep = strchr(path, '\n');
-            if (sep == NULL) {
+
+            if (sep == NULL) 
+            {
                 send_error(connfd, TYPE_ERROR_R);
                 return TYPE_ERROR_R;
             }
@@ -557,82 +618,99 @@ int send_server_response(int connfd, char path[], typereq_t type, log_t *log)
             *sep = '\0';
             forwarded_path = sep + 1;
             parsed_type = strtol(path, &endptr, 10);
-            if (endptr == path || *endptr != '\0') {
+
+            if (endptr == path || *endptr != '\0') 
+            {
                 send_error(connfd, TYPE_ERROR_R);
                 return TYPE_ERROR_R;
             }
+
             forwarded_type = (typereq_t)parsed_type;
 
-            if (forwarded_type == RM) {
+            if (forwarded_type == RM) 
+            {
                 int rm_result = remove_file(forwarded_path, DEFAULT_SERVER_DIR);
                 int update_error;
                 response = malloc(sizeof(response_t));
-                if (response == NULL) {
+
+                if (response == NULL) 
                     return 1;
-                }
-                if (rm_result == 0) {
+                
+                if (rm_result == 0) 
+                {
                     encode_response(response, (const uint8_t *)"UPDATE RM OK\n");
                     response->error = NO_ERROR_R;
                     update_error = NO_ERROR_R;
-                } else {
+                } else 
+                {
                     encode_response(response, (const uint8_t *)"UPDATE RM ERROR\n");
                     response->error = PATH_ERROR_R;
                     update_error = PATH_ERROR_R;
                 }
+
                 write_response(response, connfd);
                 free(response);
+
                 return update_error;
             }
 
-            if (forwarded_type == PUT) {
+            if (forwarded_type == PUT) 
+            {
                 int put_result;
                 response = malloc(sizeof(response_t));
-                if (response == NULL) {
+
+                if (response == NULL) 
                     return 1;
-                }
+                
                 encode_response(response, (const uint8_t *)"READY_UPDATE_PUT");
                 response->error = NO_ERROR_R;
                 write_response(response, connfd);
                 free(response);
-
                 put_result = receive_file_by_blocks_to_path(connfd, forwarded_path, DEFAULT_SERVER_DIR, 0, NULL);
-                if (put_result == CLIENT_DISCONNECTED_R) {
+                
+                if (put_result == CLIENT_DISCONNECTED_R) 
                     return CLIENT_DISCONNECTED_R;
-                }
-
+                
                 response = malloc(sizeof(response_t));
-                if (response == NULL) {
-                    return 1;
-                }
 
-                if (put_result == NO_ERROR_R) {
+                if (response == NULL) 
+                    return 1;
+
+                if (put_result == NO_ERROR_R) 
+                {
                     encode_response(response, (const uint8_t *)"UPDATE PUT OK\n");
                     response->error = NO_ERROR_R;
-                } else {
+                } else 
+                {
                     char put_error_text[MAXLINE];
                     snprintf(put_error_text, sizeof(put_error_text), "UPDATE PUT ERROR %d", put_result);
                     encode_response(response, (const uint8_t *)put_error_text);
                     response->error = put_result;
                 }
+
                 write_response(response, connfd);
                 free(response);
+
                 return put_result;
             }
 
             send_error(connfd, TYPE_ERROR_R);
+
             return TYPE_ERROR_R;
         }
 
         default:
             response = malloc(sizeof(response_t));
-            if (response == NULL) {
+
+            if (response == NULL) 
                 return 1;
-            }
+            
             memset(response, 0, sizeof(*response));
             response->error = TYPE_ERROR_R;
             response->endian = get_endianess();
             write_response(response, connfd);
             free(response);
+            
             return TYPE_ERROR_R;
     }
 }
@@ -640,36 +718,34 @@ int send_server_response(int connfd, char path[], typereq_t type, log_t *log)
 
 
 int receive_transfer_header(int connfd, transfer_header_t *header, rio_t *rio) {
-    if (header == NULL || rio == NULL) {
+    if (header == NULL || rio == NULL) 
         return 1;
-    }
     
     size_t n = Rio_readnb(rio, header, sizeof(transfer_header_t));
     
-    if (n != sizeof(transfer_header_t)) {
+    if (n != sizeof(transfer_header_t)) 
         return 1;
-    }
     
     // swap endian si nécessaire
-    if (header->endian != get_endianess()) {
-        if (swap_endian_header(header) != 0) {
+    if (header->endian != get_endianess()) 
+    {
+        if (swap_endian_header(header) != 0) 
             return 1;
-        }
+        
     }
     
     return 0;
 }
 
-int receive_data_block(int connfd, data_block_t *block, rio_t *rio) {
-    if (block == NULL || rio == NULL) {
+int receive_data_block(int connfd, data_block_t *block, rio_t *rio) 
+{
+    if (block == NULL || rio == NULL) 
         return 1;
-    }
     
     size_t n = Rio_readnb(rio, block, sizeof(data_block_t));
     
-    if (n != sizeof(data_block_t)) {
+    if (n != sizeof(data_block_t)) 
         return 1;
-    }
     
     return 0;
 }

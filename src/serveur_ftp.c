@@ -47,6 +47,7 @@ void handler_int(int signal)
         Kill(0, SIGKILL);
         while(waitpid(0, NULL, WNOHANG));
     #endif
+
     exit(0);
 }
 
@@ -59,103 +60,131 @@ int coherence(log_t *log, char *master_ip)
     ssize_t n;
     char tmp[MAXLINE];
 
-    if (log == NULL || master_ip == NULL) {
+    if (log == NULL || master_ip == NULL) 
         return 0;
-    }
 
     clientfd = Open_clientfd(master_ip, COMM_SLAVE_PORT);
-    if (clientfd < 0) {
+
+    if (clientfd < 0) 
         return 1;
-    }
 
     request_t request;
     encode_request(&request, GET, "");
     write_request(&request, clientfd);
 
-    if (pipe(fds) == -1) {
+    if (pipe(fds) == -1) 
+    {
         Close(clientfd);
         return 1;
     }
-    if (receive_content(clientfd, fds[1]) != NO_ERROR_R) {
+    if (receive_content(clientfd, fds[1]) != NO_ERROR_R) 
+    {
         Close(fds[0]);
         Close(fds[1]);
         Close(clientfd);
         return 1;
     }
+
     Close(fds[1]);
     Close(clientfd);
 
-    while ((n = Read(fds[0], tmp, sizeof(tmp))) > 0) {
+    while ((n = Read(fds[0], tmp, sizeof(tmp))) > 0) 
+    {
         char *new_content = realloc(content, total + (size_t)n + 1);
-        if (new_content == NULL) {
+
+        if (new_content == NULL) 
+        {
             free(content);
             Close(fds[0]);
             return 1;
         }
+
         content = new_content;
         memcpy(content + total, tmp, (size_t)n);
         total += (size_t)n;
         content[total] = '\0';
     }
+
     Close(fds[0]);
 
-    if (content == NULL || total == 0) {
+    if (content == NULL || total == 0) 
+    {
         free(content);
         return 0;
     }
 
     char *slave_ip = content;
-    while (slave_ip && *slave_ip) {
+
+    while (slave_ip && *slave_ip) 
+    {
         char *next = strchr(slave_ip, '\n');
-        if (next) {
+
+        if (next) 
+        {
             *next = '\0';
             next++;
         }
 
         size_t ip_len = strlen(slave_ip);
-        if (ip_len > 0 && slave_ip[ip_len - 1] == '\r') {
+
+        if (ip_len > 0 && slave_ip[ip_len - 1] == '\r') 
+        {
             slave_ip[ip_len - 1] = '\0';
             ip_len--;
         }
 
-        if (ip_len > 0) {
+        if (ip_len > 0) 
+        {
             int slavefd = Open_clientfd(slave_ip, SLAVE_PORT);
-            if (slavefd >= 0) {
+
+            if (slavefd >= 0) 
+            {
                 log_t *entry = log;
-                while (entry) {
+                while (entry) 
+                {
                     response_t ack;
                     char update_payload[MAXLINE];
-                    if (entry->type != RM && entry->type != PUT) {
+                    if (entry->type != RM && entry->type != PUT) 
+
+                    {
                         entry = follow(entry);
                         continue;
                     }
 
-                    if (snprintf(update_payload, sizeof(update_payload), "%d\n%s", (int)entry->type, entry->path) >= (int)sizeof(update_payload)) {
+                    if (snprintf(update_payload, sizeof(update_payload), "%d\n%s", (int)entry->type, entry->path) >= (int)sizeof(update_payload)) 
+                    {
                         entry = follow(entry);
                         continue;
                     }
 
                     encode_request(&request, UPDATE, update_payload);
                     write_request(&request, slavefd);
-                    if (read_response(&ack, slavefd)) {
+
+                    if (read_response(&ack, slavefd)) 
+                    {
                         break;
                     }
 
-                    if (entry->type == PUT) {
+                    if (entry->type == PUT) 
+                    {
+
                         uint8_t ack_content[MAXLINE];
                         uint8_t ack_error = TYPE_ERROR_R;
-                        if (decode_response(&ack, ack_content, &ack_error) != 0 || ack_error != NO_ERROR_R || strcmp((char *)ack_content, "READY_UPDATE_PUT") != 0) {
+
+                        if (decode_response(&ack, ack_content, &ack_error) != 0 || ack_error != NO_ERROR_R || strcmp((char *)ack_content, "READY_UPDATE_PUT") != 0) 
                             break;
-                        }
-                        if (send_file_by_blocks(slavefd, entry->path, DEFAULT_SERVER_DIR) == CLIENT_DISCONNECTED_R) {
+                        
+                        if (send_file_by_blocks(slavefd, entry->path, DEFAULT_SERVER_DIR) == CLIENT_DISCONNECTED_R) 
                             break;
-                        }
-                        if (read_response(&ack, slavefd)) {
+                        
+                        if (read_response(&ack, slavefd)) 
                             break;
-                        }
+                        
                     }
+
                     entry = follow(entry);
                 }
+
                 encode_request(&request, BYE, "");
                 write_request(&request, slavefd);
                 Close(slavefd);
@@ -166,6 +195,7 @@ int coherence(log_t *log, char *master_ip)
     }
 
     free(content);
+
     return 0;
 }
 /* 
@@ -196,76 +226,88 @@ int main(int argc, char **argv)
     char buf[MAXLINE];
     int j = 0;
     Rio_readlineb(&rio, buf, MAXLINE);
+
     for(; j < INET_ADDRSTRLEN - 1; j++)
     {
         #ifdef DEBUG
             printf("%s say \"Caractere lu : %c\"\n", SPEAKER, buf[j]);
         #endif
+
         if(buf[j] != '\n')
+        {
             master_ip[j] = buf[j];
-        else
+        } else
+        {
             master_ip[j]='\0';
+        }
     }
+
     master_ip[j] = '\0';
     Close(fd);
-
     listenfd = Open_listenfd(SLAVE_PORT);
+
     #ifdef DEBUG
         printf("%s say \"client len :%u listenfd : %d\"\n", SPEAKER, clientlen, listenfd);
     #endif
+
     for(int i = 0; i < POOL_SIZE; i++)
     {
-        if(Fork() == 0) {
-            while (1) {
+        if(Fork() == 0) 
+        {
+            while (1) 
+            {
                 connfd = Accept(listenfd, (SA *)&clientaddr, &clientlen);
-                Getnameinfo((SA *) &clientaddr, clientlen,
-                                client_hostname, MAX_NAME_LEN, 0, 0, 0);
-                    
-                Inet_ntop(AF_INET, &clientaddr.sin_addr, client_ip_string,
-                        INET_ADDRSTRLEN);
+                Getnameinfo((SA *) &clientaddr, clientlen, client_hostname, MAX_NAME_LEN, 0, 0, 0);
+                Inet_ntop(AF_INET, &clientaddr.sin_addr, client_ip_string, INET_ADDRSTRLEN);
 
                 #ifdef DEBUG
                     printf("%s say \"Server connected to %s (%s)\"\n", SPEAKER, client_hostname, client_ip_string);
                 #endif
+
                 log_t *log = NULL;
                 int is_update = 0;
+
                 while(1) {
                     request_t* request = malloc(sizeof(request_t));
 
-                    if (request == NULL) {
+                    if (request == NULL) 
+                    {
                         #ifdef DEBUG
                             printf("%s say \"Request can't allocate\"\n", SPEAKER);
                         #endif
+
                         Close(connfd);
                         continue;
                     }
-                    if (read_request(request, connfd)) {
+                    if (read_request(request, connfd)) 
+                    {
                         #ifdef DEBUG
                             printf("%s say \"Failed to read request (size: %ld)\"\n", SPEAKER, sizeof(request_t));
                         #endif
+
                         free(request);
                         break;
                     }
 
                     char path[MAXLINE];
                     typereq_t typereq;
-
                     decode_request(request, &typereq, path);
                     free(request);
 
-                    if (typereq == RM || typereq == PUT) {
+                    if (typereq == RM || typereq == PUT) 
                         add(&log, typereq, path);
-                    }
 
                     if(typereq == UPDATE)
                         is_update = 1;
+
                     #ifdef DEBUG
                     printf("%s say \"%ld bytes reçu\"\n", SPEAKER, strlen(path));
                     printf("%s say \"\t- type de requete : %d\"\n", SPEAKER, typereq);
                     printf("%s say \"\t- chemin : %s\"\n", SPEAKER, path);
                     #endif
                     
-                    if (send_server_response(connfd, path, typereq, log) == CLIENT_DISCONNECTED_R && (typereq == GET || typereq == RESUME || typereq == PUT)) {
+                    if (send_server_response(connfd, path, typereq, log) == CLIENT_DISCONNECTED_R && (typereq == GET || typereq == RESUME || typereq == PUT)) 
+                    {
                         #ifdef DEBUG
                             printf("%s say \"Client disconnected during transfer\"\n", SPEAKER);
                         #endif
@@ -278,19 +320,25 @@ int main(int argc, char **argv)
 
                     if(typereq == BYE)
                         break;
+
                 }
+
                 #ifdef DEBUG
                     printf("%s say \"End of connection\"\n", SPEAKER);
                 #endif
+
                 Close(connfd);
+
                 if(!is_update)
                 {
                     coherence(log, master_ip);
                 }
+
                 free_log(log);
             }
         }
     }
-    while(1);
+    while(1)
+        pause();
 }
 
