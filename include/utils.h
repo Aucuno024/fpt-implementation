@@ -9,6 +9,7 @@
 #ifndef DEFAULT_CLIENT_DIR
 #define DEFAULT_CLIENT_DIR "./clientdir/"
 #endif
+
 /**
  * @brief Retourne l'endianness de la machine
  * @return int 0 si little endian, 1 si big endian
@@ -53,13 +54,6 @@ int write_file_from_content(char path[], const uint8_t *content, size_t content_
  */
 int write_file_to_dest_dir(char path[], const uint8_t *content, size_t content_size, const char *dirpath);
 
-/**
- * @fn int is_relative_path(char path[])
- * @brief Verifie si un chemin depend du repertoire courant ou non
- * @param path le chemin a tester
- * @return 1 si c'est le cas 0 sinon
- */
-int is_relative_path(char path[]);
 
 /**
  * @fn int list_dir(char *path, char *content) 
@@ -69,25 +63,6 @@ int is_relative_path(char path[]);
  * @return 0 si réussi sans probleme 1 sinon
  */
 int list_dir(char *path, char **content);
-
-/**
- * @brief Fourni le chemin absolu à partir d'un chemin donné, en vérifiant que le chemin résultant est bien dans le dossier du dirpath
- * @param path le chemin à convertir
- * @param server_path le buffer où stocker le chemin absolu vers le serveur
- * @param dirpath le chemin du dossier du serveur
- * @return int 1 si le chemin est valide et dans le dossier du serveur, 0 sinon
- */
-int get_abs_dest_path_from_src_path(const char *path, char *server_path, const char *dirpath);
-
-/**
- * @brief Résout un chemin absolu dans dirpath avec mode nécessitant ou non que le chemin existe déjà
- * @param path chemin logique reçu dans la requête
- * @param server_path buffer de sortie
- * @param dirpath dossier racine autorisé
- * @param require_existing 1 si le chemin doit exister, 0 si le chemin peut être creer
- * @return int 1 si le chemin est autorisé selon le mode, 0 sinon
- */
-int get_abs_path_from_src_path(const char *path, char *server_path, const char *dirpath, int require_existing);
 
 /**
  * @fn int update(char **content, char *element)

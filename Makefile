@@ -52,9 +52,9 @@ $(OBJDIR)/%.o: $(TEST_SRCDIR)/%.c
 	$(CC) -c $(CFLAGS) $(CPPFLAGS) -I$(TEST_INCDIR) $< -o $@
 
 
-CLIENT_OBJS := $(OBJDIR)/client.o $(OBJDIR)/csapp.o $(OBJDIR)/request.o $(OBJDIR)/utils.o $(OBJDIR)/response.o $(OBJDIR)/logs.o
-SERVER_OBJS := $(OBJDIR)/serveur_ftp.o $(OBJDIR)/csapp.o $(OBJDIR)/request.o $(OBJDIR)/utils.o $(OBJDIR)/response.o $(OBJDIR)/logs.o
-MASTER_OBJS := $(OBJDIR)/master_dns.o $(OBJDIR)/csapp.o $(OBJDIR)/request.o $(OBJDIR)/utils.o $(OBJDIR)/response.o $(OBJDIR)/logs.o
+CLIENT_OBJS := $(OBJDIR)/client.o $(OBJDIR)/csapp.o $(OBJDIR)/request.o $(OBJDIR)/utils.o $(OBJDIR)/response.o $(OBJDIR)/logs.o $(OBJDIR)/path.o
+SERVER_OBJS := $(OBJDIR)/serveur_ftp.o $(OBJDIR)/csapp.o $(OBJDIR)/request.o $(OBJDIR)/utils.o $(OBJDIR)/response.o $(OBJDIR)/logs.o $(OBJDIR)/path.o
+MASTER_OBJS := $(OBJDIR)/master_dns.o $(OBJDIR)/csapp.o $(OBJDIR)/request.o $(OBJDIR)/utils.o $(OBJDIR)/response.o $(OBJDIR)/logs.o $(OBJDIR)/path.o
 
 $(EXECDIR)/client: $(CLIENT_OBJS)
 	$(CC) -o $@ $(LDFLAGS) $^ $(LIBS)
@@ -65,7 +65,7 @@ $(EXECDIR)/serveur_ftp: $(SERVER_OBJS)
 $(EXECDIR)/master_dns: $(MASTER_OBJS)
 	$(CC) -o $@ $(LDFLAGS) $^ $(LIBS)
 
-$(EXECDIR)/test: $(TEST_OBJS) $(OBJDIR)/csapp.o $(OBJDIR)/request.o $(OBJDIR)/utils.o $(OBJDIR)/response.o $(OBJDIR)/logs.o
+$(EXECDIR)/test: $(TEST_OBJS) $(OBJDIR)/csapp.o $(OBJDIR)/request.o $(OBJDIR)/utils.o $(OBJDIR)/response.o $(OBJDIR)/logs.o $(OBJDIR)/path.o
 	$(CC) -o $@ $(LDFLAGS) $^ $(LIBS)
 
 make_dir:

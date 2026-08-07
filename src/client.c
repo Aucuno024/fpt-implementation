@@ -8,6 +8,7 @@
 #include <dirent.h>
 #include <sys/stat.h>
 #include "utils.h"
+#include "path.h"
 
 #define PORT 2121
 #define PART_SUFFIX ".part"

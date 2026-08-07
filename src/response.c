@@ -11,6 +11,7 @@
 #include <arpa/inet.h>
 #include "utils.h"
 #include "logs.h"
+#include "path.h"
 
 #ifdef DELAY
 #include <time.h>
