@@ -273,5 +273,7 @@ int main(int argc, char **argv)
         }
         Close(connfd);
     }
+    if(!pid)
+        wait(NULL);
 }
 
