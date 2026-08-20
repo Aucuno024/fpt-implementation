@@ -183,7 +183,8 @@ int main(int argc, char **argv)
                     printf("%s say \"Password not correct %s, %s, %d\"\n", SPEAKER, PASSWORD, content, strcmp(content, PASSWORD));
                 #endif
                 send_error(connfd, PASSWORD_ERROR);
-                break;
+                close(connfd);
+                continue;
             }
 
             #ifdef DEBUG
