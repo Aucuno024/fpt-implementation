@@ -72,4 +72,15 @@ int list_dir(char *path, char **content);
  * @return 1 si erreur 0 sinon
  */
 int update(char **content, char *element);
+
+/**
+ * @fn char **split(char *str, char chr, int size_str, int *size_splited)
+ * @brief Cree un tableau de pointeur vers toutes les chaines de caractères suivant chr dans str
+ * @param str la chaine de caractere a split
+ * @param chr le caractere de split
+ * @param size_str la taille de la chaine
+ * @param size_splited la taille du tableau de sous chaine creee
+ * @return NULL si il n'y a aucune sous chaine, un tableau de sous chaine sinon
+ */
+char **split(char *str, char chr, int size_str, int *size_splited);
 #endif

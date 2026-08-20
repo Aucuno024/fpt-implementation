@@ -3,6 +3,7 @@
 #include "response.h"
 #include "logs.h"
 #include "utils.h"
+#include "config_loader.h"
 
 #ifndef SLAVE_PORT
 #define SLAVE_PORT 2121
@@ -216,34 +217,15 @@ int main(int argc, char **argv)
     struct sockaddr_in clientaddr;
     char client_ip_string[INET_ADDRSTRLEN];
     char client_hostname[MAX_NAME_LEN];
-    char master_ip[INET_ADDRSTRLEN];
 
     clientlen = (socklen_t)sizeof(clientaddr);
 
-    int fd = Open(MASTER_PATH, O_RDONLY, 0);
-    rio_t rio;
-    Rio_readinitb(&rio, fd);
-    char buf[MAXLINE];
-    int j = 0;
-    Rio_readlineb(&rio, buf, MAXLINE);
 
-    for(; j < INET_ADDRSTRLEN - 1; j++)
-    {
-        #ifdef DEBUG
-            printf("%s say \"Caractere lu : %c\"\n", SPEAKER, buf[j]);
-        #endif
 
-        if(buf[j] != '\n')
-        {
-            master_ip[j] = buf[j];
-        } else
-        {
-            master_ip[j]='\0';
-        }
-    }
+    config_slave_t conf;
+    if(init_config_slave(&conf, MASTER_PATH))
+        return 1;
 
-    master_ip[j] = '\0';
-    Close(fd);
     listenfd = Open_listenfd(SLAVE_PORT);
 
     #ifdef DEBUG
@@ -331,7 +313,7 @@ int main(int argc, char **argv)
 
                 if(!is_update)
                 {
-                    coherence(log, master_ip);
+                    coherence(log, conf.ip_master);
                 }
 
                 free_log(log);

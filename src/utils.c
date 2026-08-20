@@ -270,9 +270,26 @@ int list_dir(char *path, char **content)
 
 char **split(char *str, char chr, int size_str, int *size_splited)
 {
-    int s = 0;
-    char ** ptr;
+    char **splited = NULL;
+    int size = 0;
 
-    for(int i = 0; i < size_str; i++);
-    return ptr;
+    for(int i = 0; i < size_str; i++)
+    {
+        if(str[i] == chr)
+        {
+            if(!splited)
+            {
+                splited = malloc(sizeof(char *));
+                splited[size++] = str + i + 1;
+            } else 
+            {
+                splited = realloc(splited, sizeof(char *) * (size + 1));
+                splited[size++] = str + i + 1;
+            }
+        }
+    }
+
+    *size_splited = size;
+
+    return splited;
 }

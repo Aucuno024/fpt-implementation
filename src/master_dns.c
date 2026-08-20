@@ -91,7 +91,6 @@ int main(int argc, char **argv)
     char slave_ip[NB_SLAVE][INET_ADDRSTRLEN];
     int i = 0, connected = 0;
     clientlen = (socklen_t)sizeof(clientaddr);
-   
     int fd = Open(SLAVE_PATH, O_RDONLY, 0);
     rio_t rio;
     Rio_readinitb(&rio, fd);

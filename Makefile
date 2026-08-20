@@ -53,7 +53,7 @@ $(OBJDIR)/%.o: $(TEST_SRCDIR)/%.c
 
 
 CLIENT_OBJS := $(OBJDIR)/client.o $(OBJDIR)/csapp.o $(OBJDIR)/request.o $(OBJDIR)/utils.o $(OBJDIR)/response.o $(OBJDIR)/logs.o $(OBJDIR)/path.o
-SERVER_OBJS := $(OBJDIR)/serveur_ftp.o $(OBJDIR)/csapp.o $(OBJDIR)/request.o $(OBJDIR)/utils.o $(OBJDIR)/response.o $(OBJDIR)/logs.o $(OBJDIR)/path.o
+SERVER_OBJS := $(OBJDIR)/serveur_ftp.o $(OBJDIR)/csapp.o $(OBJDIR)/request.o $(OBJDIR)/utils.o $(OBJDIR)/response.o $(OBJDIR)/logs.o $(OBJDIR)/path.o $(OBJDIR)/config_loader.o
 MASTER_OBJS := $(OBJDIR)/master_dns.o $(OBJDIR)/csapp.o $(OBJDIR)/request.o $(OBJDIR)/utils.o $(OBJDIR)/response.o $(OBJDIR)/logs.o $(OBJDIR)/path.o
 
 $(EXECDIR)/client: $(CLIENT_OBJS)
