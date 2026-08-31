@@ -1,4 +1,5 @@
 #include <crypt.h>
+#include "config_loader.h"
 #include "csapp.h"
 #include "request.h"
 #include "response.h"
@@ -91,40 +92,10 @@ int main(int argc, char **argv)
     char slave_ip[NB_SLAVE][INET_ADDRSTRLEN];
     int i = 0, connected = 0;
     clientlen = (socklen_t)sizeof(clientaddr);
-    int fd = Open(SLAVE_PATH, O_RDONLY, 0);
-    rio_t rio;
-    Rio_readinitb(&rio, fd);
-    char buf[MAXLINE];
-    int n = 0;
 
-    for(int i = 0; i < NB_SLAVE && (n = Rio_readlineb(&rio, buf, MAXLINE)); i++)
-    {
-        int j = 0;
-        for(; j < INET_ADDRSTRLEN - 1; j++)
-        {
-            #ifdef DEBUG
-                printf("%s say \"Caractere lu : %c\"\n", SPEAKER, buf[j]);
-            #endif
-
-            if(buf[j] == '\n' || buf[j] == '\0')
-            {
-                slave_ip[i][j]='\0';
-                break;
-            }
-
-            if(buf[j] == '\r')
-            {
-                slave_ip[i][j] = '\0';
-            } else
-            {
-                slave_ip[i][j] = buf[j];
-            }
-        }
-        slave_ip[i][j] = '\0';
-        connected++;
-    }
-
-    Close(fd);
+    config_master_t *config = malloc(sizeof(config_master_t));
+    load_config_master(&config, SLAVE_PATH, NB_SLAVE);
+    printf("%d\n", config->number);
     pid_t pid = Fork();
 
     if(pid) 
@@ -188,21 +159,20 @@ int main(int argc, char **argv)
             }
 
             #ifdef DEBUG
-                    printf("%s say \"check request type\"\n", SPEAKER);
+                    printf("%s say \"check request type: %d and disponibility: %d\"\n", SPEAKER, typereq == GET, config->number);
             #endif
 
-            if(connected && typereq == GET)
+            if(config->number && typereq == GET)
             {
             
-                i = (i + 1) % connected;
+                i = (i + 1) % config->number;
                 #ifdef DEBUG
-                    printf("%s say \"Provide ip %s\" and PORT (%s)\"\n", SPEAKER, slave_ip[i], port);
+                    printf("%s say \"Provide ip %s\" and PORT (%s)\"\n", SPEAKER, config->ip_slaves[i], port);
                 #endif
                 response_t *r = malloc(sizeof(response_t));
                 r->endian = get_endianess();
                 r->error = 0;
-
-                write_cred((char *)r->content, port, (char *)slave_ip[i]);
+                write_cred((char *)r->content, port, (char *) config->ip_slaves[i]);
                 write_response(r, connfd);
                 free(r);
             } else 
@@ -273,6 +243,7 @@ int main(int argc, char **argv)
         }
         Close(connfd);
     }
+    free_config_master(config);
     if(!pid)
         wait(NULL);
 }
